@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "684135409905",
+    "project_id": "acadease-faeb0",
+    "storage_bucket": "acadease-faeb0.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:684135409905:android:e15d6aba69b4917b342150",
+        "android_client_info": {
+          "package_name": "com.example.acadease"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC6N4f1b_UC4m7EVdSLRLXFDYdFPU3taGg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

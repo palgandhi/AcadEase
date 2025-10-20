@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">AcadEase</string>
+    <string-array name="user_roles">
+        <item>student</item>
+        <item>faculty</item>
+        <item>admin</item>
+    </string-array>
+</resources>
