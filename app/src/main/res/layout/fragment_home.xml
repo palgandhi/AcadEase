@@ -1,39 +1,148 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp"
+    android:background="?android:attr/colorBackground"
     tools:context=".fragments.HomeFragment">
 
+    <LinearLayout
+        android:id="@+id/app_header_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="16dp"
+        android:paddingTop="16dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="8dp">
+
+        <ImageView
+            android:id="@+id/nav_drawer_icon"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:contentDescription="Menu"
+            android:src="@drawable/menu"
+            app:tint="?attr/colorPrimary" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center_horizontal"
+            android:text="AcadEase"
+            android:textColor="?attr/colorPrimary"
+            android:textSize="22sp"
+            android:textStyle="bold" />
+
+        <ImageView
+            android:id="@+id/profile_icon"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:contentDescription="Profile"
+            android:src="@drawable/person"
+            app:tint="?attr/colorPrimary" />
+
+    </LinearLayout>
+
     <TextView
-        android:id="@+id/announcements_header"
+        android:id="@+id/greeting_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Portal Announcements"
-        android:textSize="22sp"
-        android:textStyle="bold"
-        android:textColor="?attr/colorPrimary"/>
+        android:layout_below="@id/app_header_bar"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        android:text="Good Morning"
+        android:textColor="@color/text_dark"
+        android:textSize="28sp"
+        android:textStyle="bold" />
+
+    <HorizontalScrollView
+        android:id="@+id/category_filters_scroll"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/greeting_text"
+        android:layout_marginTop="16dp"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:id="@+id/category_filters_container"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_filter_academic"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="89dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:backgroundTint="?attr/colorPrimary"
+                android:text="Academic"
+                android:textColor="@color/text_light" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_filter_sports"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_marginEnd="8dp"
+                android:backgroundTint="@color/white"
+                android:text="Sports"
+                android:textColor="@color/text_dark" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_filter_all"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_marginEnd="8dp"
+                android:backgroundTint="@color/white"
+                android:text="All"
+                android:textColor="@color/text_dark" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_filter_events"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_marginEnd="8dp"
+                android:backgroundTint="@color/white"
+                android:text="Events"
+                android:textColor="@color/text_dark" />
+        </LinearLayout>
+    </HorizontalScrollView>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/announcements_recycler_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/announcements_header"
+        android:layout_below="@id/category_filters_scroll"
         android:layout_marginTop="16dp"
         android:clipToPadding="false"
-        android:paddingBottom="64dp"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="80dp"
         tools:listitem="@layout/item_announcement_card" />
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
+
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/fab_create_announcement"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
-        android:layout_margin="16dp"
-        android:src="@drawable/add"
-        android:contentDescription="Create New Announcement" />
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+        android:contentDescription="Create New Announcement"
+        android:text="New Post"
+        android:textColor="@color/text_dark"
+        app:backgroundTint="@color/white"
+        app:icon="@drawable/add"
+        app:iconTint="@color/text_dark" />
+
 
 </RelativeLayout>

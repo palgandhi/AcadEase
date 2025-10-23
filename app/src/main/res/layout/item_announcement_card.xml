@@ -2,90 +2,127 @@
 <com.google.android.material.card.MaterialCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginTop="8dp"
     android:layout_marginBottom="8dp"
-    app:cardCornerRadius="8dp"
-    app:cardElevation="4dp">
-
+    app:cardCornerRadius="12dp"
+    app:cardElevation="6dp"
+    app:cardBackgroundColor="@color/card_background_dark">
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:padding="16dp">
 
-        <RelativeLayout
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp">
+            android:orientation="horizontal"
+            android:layout_marginBottom="8dp"
+            android:gravity="center_vertical">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/person"
+                app:tint="@color/text_light"
+                android:layout_marginEnd="8dp"
+                android:contentDescription="Poster Icon" />
 
             <TextView
-                android:id="@+id/card_announcement_title"
+                android:id="@+id/card_announcement_poster"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignParentStart="true"
-                android:layout_toStartOf="@id/card_announcement_category"
-                android:ellipsize="end"
-                android:maxLines="1"
-                android:text="[Assignment Due Date Extended]"
-                android:textColor="?attr/colorPrimaryDark"
-                android:textSize="18sp"
+                android:text="Cultural Committee"
+                android:textColor="@color/text_light"
+                android:textSize="14sp"
                 android:textStyle="bold" />
 
             <TextView
-                android:id="@+id/card_announcement_category"
-                android:layout_width="wrap_content"
+                android:id="@+id/card_announcement_timestamp"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_alignParentEnd="true"
-                android:background="@drawable/category_tag_background"
-                android:paddingStart="8dp"
-                android:paddingTop="2dp"
-                android:paddingEnd="8dp"
-                android:paddingBottom="2dp"
-                android:text="ACADEMIC"
-                android:textSize="12sp"
-                android:textStyle="bold"
-                android:textColor="@color/white"
-                app:backgroundTint="?attr/colorAccent" />
-        </RelativeLayout>
+                android:layout_weight="1"
+                android:gravity="end"
+                android:text="Today, 7:00 PM"
+                android:textColor="#B3B3B3"
+                android:textSize="12sp"/>
+        </LinearLayout>
 
         <TextView
-            android:id="@+id/card_announcement_body"
+            android:id="@+id/card_announcement_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:ellipsize="end"
-            android:maxLines="3"
-            android:text="The due date for the CS101 final project has been moved to November 15th to accommodate feedback sessions. Check the course page for details..."
-            android:textColor="?attr/colorOnSurface"
-            android:textSize="14sp"
+            android:maxLines="4"
+            android:text="It's time to grab your dandiya sticks and get ready to dance the night away! We're beyond excited to officially announce NUV Khelaiya 2025, our very own Garba night organized."
+            android:textColor="@color/text_light"
+            android:textSize="16sp"
+            android:textStyle="normal"
             android:layout_marginBottom="12dp"/>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:gravity="center_vertical">
+            android:gravity="center_vertical"
+            android:layout_marginBottom="8dp">
 
-            <TextView
-                android:id="@+id/card_announcement_target"
+            <ImageView
+                android:id="@+id/card_announcement_image"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:scaleType="centerCrop"
+                android:visibility="gone"
+                android:layout_marginEnd="12dp"
+                android:contentDescription="Announcement Image" />
+
+            <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Target: Students, Faculty"
-                android:textSize="12sp"
-                android:textColor="@color/design_default_color_secondary"
-                android:textStyle="italic"/>
+                android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/card_announcement_timestamp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="1 hour ago"
-                android:textSize="12sp"
-                android:textColor="?attr/colorOnSurfaceVariant"/>
+                <TextView
+                    android:id="@+id/card_announcement_category"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="CULTURAL"
+                    android:textSize="14sp"
+                    android:textColor="#FFC107"
+                    android:textStyle="bold" />
 
+                <TextView
+                    android:id="@+id/card_announcement_target"  android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Target: All Users"
+                    android:textColor="@color/text_light"
+                    android:textSize="12sp"
+                    android:layout_marginTop="4dp" />
+
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="end">
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_favourite_border"
+                app:tint="@color/text_light"
+                android:layout_marginEnd="16dp"
+                android:contentDescription="Like" />
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/share"
+                app:tint="@color/text_light"
+                android:contentDescription="Share" />
         </LinearLayout>
     </LinearLayout>
-
 </com.google.android.material.card.MaterialCardView>

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/app_header_bar"
+    android:layout_width="match_parent"
+    android:layout_height="?attr/actionBarSize"
+    android:orientation="horizontal"
+    android:paddingStart="16dp"
+    android:paddingEnd="16dp"
+    android:gravity="center_vertical"
+    android:background="@color/background_light_grey">
+
+    <ImageView
+        android:id="@+id/nav_drawer_icon"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:src="@drawable/menu"
+        app:tint="?attr/colorPrimary"
+        android:contentDescription="Menu" />
+
+    <TextView
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:gravity="center_horizontal"
+        android:text="AcadEase"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:textColor="?attr/colorPrimary" />
+
+    <ImageView
+        android:id="@+id/profile_icon"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:src="@drawable/person"
+        app:tint="?attr/colorPrimary"
+        android:contentDescription="Profile" />
+
+</LinearLayout>
