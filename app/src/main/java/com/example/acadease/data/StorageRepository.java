@@ -39,6 +39,25 @@ public class StorageRepository {
                 });
     }
 
+    public void uploadFile(Uri fileUri, String filePath, UploadCallback callback) {
+        // 1. Define the storage path
+        StorageReference ref = storage.getReference().child(filePath);
+
+        // 2. Start the upload task
+        ref.putFile(fileUri)
+                .addOnSuccessListener(taskSnapshot -> {
+                    // Get the download URL once the upload is complete
+                    ref.getDownloadUrl().addOnSuccessListener(uri -> {
+                        callback.onSuccess(uri.toString()); // Pass the public URL back
+                    }).addOnFailureListener(e -> {
+                        callback.onFailure(new Exception("Failed to get download URL: " + e.getMessage()));
+                    });
+                })
+                .addOnFailureListener(e -> {
+                    callback.onFailure(new Exception("File upload failed: " + e.getMessage()));
+                });
+    }
+
     public interface UploadCallback {
         void onSuccess(String downloadUrl);
         void onFailure(Exception e);

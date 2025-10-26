@@ -5,6 +5,7 @@ import android.util.Log;
 import com.example.acadease.model.Announcement;
 import com.example.acadease.model.Schedule;
 import com.example.acadease.model.User;
+import com.example.acadease.utils.ScheduleUtility;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.WriteBatch;
@@ -87,6 +88,22 @@ public class AdminRepository {
                 });
     }
 
+    public void createSchedule(Schedule scheduleBlueprint, List<Map<String, Object>> sessions, RegistrationCallback callback) {
+
+        // Step A: Save the Schedule Document first (The parent blueprint)
+        db.collection(SCHEDULES_COLLECTION).add(scheduleBlueprint)
+                .addOnSuccessListener(documentReference -> {
+                    String scheduleId = documentReference.getId();
+
+                    // Step B: Bulk write the generated sessions
+                    // CRITICAL: Call the Utility to generate the sessions using the corrected logic
+                    List<Map<String, Object>> generatedSessions = ScheduleUtility.generateSessions(scheduleBlueprint, scheduleId);
+
+                    writeSessionsToFirestore(generatedSessions, scheduleId, callback);
+                })
+                .addOnFailureListener(e -> callback.onFailure(new Exception("Schedule blueprint save failed: " + e.getMessage())));
+    }
+
     /**
      * Executes the combined Batched Write for User Profile and Enrollments.
      */
@@ -164,18 +181,6 @@ public class AdminRepository {
     // 3. SCHEDULING (Creation and Session Bulk Write)
     // =========================================================
 
-    public void createSchedule(Schedule scheduleBlueprint, List<Map<String, Object>> sessions, RegistrationCallback callback) {
-
-        // Step A: Save the Schedule Document first (The parent blueprint)
-        db.collection(SCHEDULES_COLLECTION).add(scheduleBlueprint)
-                .addOnSuccessListener(documentReference -> {
-                    String scheduleId = documentReference.getId();
-
-                    // Step B: Bulk write the generated sessions
-                    writeSessionsToFirestore(sessions, scheduleId, callback);
-                })
-                .addOnFailureListener(e -> callback.onFailure(new Exception("Schedule blueprint save failed: " + e.getMessage())));
-    }
 
     private void writeSessionsToFirestore(List<Map<String, Object>> sessions, String scheduleId, RegistrationCallback callback) {
         WriteBatch batch = db.batch();

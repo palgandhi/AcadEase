@@ -12,10 +12,22 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AcadEase">
         <activity
-            android:name=".CreateAnnouncementActivity"
+            android:name=".fragments.SubmissionFragment"
             android:exported="false" />
         <activity
-            android:name=".AdminRegistrationActivity"
+            android:name=".fragments.AssignmentListFragment"
+            android:exported="false" />
+        <activity
+            android:name=".fragments.FacultyAssignmentFragment"
+            android:exported="false" />
+        <activity
+            android:name=".fragments.RosterInputFragment"
+            android:exported="false" />
+        <activity
+            android:name=".fragments.ScheduleFragment"
+            android:exported="false" />
+        <activity
+            android:name=".CreateAnnouncementActivity"
             android:exported="false" />
         <activity
             android:name=".AdminDashboardActivity"
@@ -26,6 +38,11 @@
         <activity
             android:name=".StudentDashboardActivity"
             android:exported="false" />
+        <activity
+            android:name=".AssignmentCreationActivity"
+            android:exported="false"
+            android:label="New Assignment"
+            android:parentActivityName=".FacultyDashboardActivity" />
         <activity
             android:name=".MainActivity"
             android:exported="true">

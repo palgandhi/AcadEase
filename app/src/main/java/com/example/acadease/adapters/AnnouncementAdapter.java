@@ -2,14 +2,18 @@ package com.example.acadease.adapters;
 
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.acadease.R;
-import com.example.acadease.data.AnnouncementRepository; // Needed for lookup
+import com.example.acadease.data.AnnouncementRepository;
 import com.example.acadease.model.Announcement;
 import com.google.firebase.Timestamp;
 import java.text.SimpleDateFormat;
@@ -22,7 +26,7 @@ public class AnnouncementAdapter extends RecyclerView.Adapter<AnnouncementAdapte
     private final List<Announcement> announcementList;
     private final Context context;
     private final OnAnnouncementActionListener listener;
-    private final AnnouncementRepository announcementRepository; // CRITICAL: Repository instance
+    private final AnnouncementRepository announcementRepository;
 
     public interface OnAnnouncementActionListener {
         void onDeleteClicked(String announcementId, int position);
@@ -32,7 +36,7 @@ public class AnnouncementAdapter extends RecyclerView.Adapter<AnnouncementAdapte
         this.context = context;
         this.announcementList = announcementList;
         this.listener = listener;
-        this.announcementRepository = announcementRepository; // Initialize repository
+        this.announcementRepository = announcementRepository;
     }
 
     @NonNull
@@ -40,25 +44,25 @@ public class AnnouncementAdapter extends RecyclerView.Adapter<AnnouncementAdapte
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.item_announcement_card, parent, false);
-        return new ViewHolder(view, listener, announcementList);
+        return new ViewHolder(view, listener, announcementList, announcementRepository);
     }
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Announcement announcement = announcementList.get(position);
 
-        // 1. Body and Title Binding (Using title for the main snippet)
+        // 1. Body and Title Binding
         holder.title.setText(announcement.getBody() != null ? announcement.getBody() : "NO BODY TEXT AVAILABLE");
 
-        // 2. Poster Name Lookup (CRITICAL ASYNCHRONOUS CALL)
+        // 2. Poster Name Lookup (Asynchronous)
         String postedByUid = announcement.getPostedBy();
         if (postedByUid != null) {
-            holder.poster.setText("Loading..."); // Set placeholder immediately
+            holder.poster.setText("Loading...");
 
             announcementRepository.fetchUserName(postedByUid, new AnnouncementRepository.NameCallback() {
                 @Override
                 public void onSuccess(String name) {
-                    holder.poster.setText(name); // Set actual name when data returns
+                    holder.poster.setText(name);
                 }
             });
         } else {
@@ -73,7 +77,7 @@ public class AnnouncementAdapter extends RecyclerView.Adapter<AnnouncementAdapte
             holder.category.setText("GENERAL");
         }
 
-        // 4. Target Roles Null Check
+        // 4. Target Roles Null Check (Using target TextView, which is mapped to Category's container)
         List<String> roles = announcement.getTargetRole();
         if (roles != null && !roles.isEmpty()) {
             String targetRoles = "Target: " + String.join(", ", roles);
@@ -84,9 +88,6 @@ public class AnnouncementAdapter extends RecyclerView.Adapter<AnnouncementAdapte
 
         // 5. Timestamp
         holder.timestamp.setText(formatTimestamp(announcement.getCreatedAt()));
-
-        // 6. Set Item Click Listener (Optional)
-        // holder.itemView.setOnClickListener(...)
     }
 
     @Override
@@ -106,23 +107,63 @@ public class AnnouncementAdapter extends RecyclerView.Adapter<AnnouncementAdapte
         return sdf.format(date);
     }
 
-    public static class ViewHolder extends RecyclerView.ViewHolder {
-        public TextView title, category, target, timestamp, poster;
+    // Inside AnnouncementAdapter.java
 
-        public ViewHolder(@NonNull View view, OnAnnouncementActionListener listener, List<Announcement> announcementList) {
+    public static class ViewHolder extends RecyclerView.ViewHolder {
+        // TextViews
+        public TextView title, category, target, timestamp, poster;
+        // Icons
+        public ImageView iconLike, iconShare;
+
+        // Local state tracker for the like button (false = outlined, true = filled/red)
+        private boolean isLiked = false;
+
+        public ViewHolder(@NonNull View view, OnAnnouncementActionListener listener, List<Announcement> announcementList, AnnouncementRepository announcementRepository) {
             super(view);
 
-            // Map the views from item_announcement_card.xml
+            // --- MAPPING VIEWS ---
             title = view.findViewById(R.id.card_announcement_title);
             category = view.findViewById(R.id.card_announcement_category);
-            poster = view.findViewById(R.id.card_announcement_poster); // Mapped the poster name field
+            poster = view.findViewById(R.id.card_announcement_poster);
             timestamp = view.findViewById(R.id.card_announcement_timestamp);
 
-            // NOTE: Since the target TextView ID was ambiguous, we are using the category TextView
-            // for the actual target list output in the Java logic for now.
+            // Target is mapped to the Category TextView for simplicity in the current XML structure
             target = view.findViewById(R.id.card_announcement_category);
 
-            // Delete Logic
+            iconLike = view.findViewById(R.id.icon_like);
+            iconShare = view.findViewById(R.id.icon_share);
+
+            // --- ACTION LISTENERS ---
+
+            // 1. LIKE Functionality (Client-Side State Toggle)
+            iconLike.setOnClickListener(v -> {
+                isLiked = !isLiked; // Toggle the state
+
+                Context context = view.getContext();
+
+                if (isLiked) {
+                    // Change icon to filled heart and tint it red
+                    iconLike.setImageResource(R.drawable.ic_favorite_filled);
+                    iconLike.setColorFilter(context.getColor(R.color.design_default_color_error));
+                    Toast.makeText(context, "Liked!", Toast.LENGTH_SHORT).show();
+                } else {
+                    // Change icon back to outlined heart and tint it dark/light
+                    iconLike.setImageResource(R.drawable.ic_favorite_border);
+                    iconLike.setColorFilter(context.getColor(R.color.text_light));
+                    Toast.makeText(context, "Unliked.", Toast.LENGTH_SHORT).show();
+                }
+            });
+
+            // 2. Share Functionality (Android Native Intent)
+            iconShare.setOnClickListener(v -> {
+                String shareText = "Check out this announcement from AcadEase: " + announcementList.get(getAdapterPosition()).getTitle();
+                Intent shareIntent = new Intent(Intent.ACTION_SEND);
+                shareIntent.setType("text/plain");
+                shareIntent.putExtra(Intent.EXTRA_TEXT, shareText);
+                view.getContext().startActivity(Intent.createChooser(shareIntent, "Share Announcement"));
+            });
+
+            // 3. DELETION LOGIC (Long Press)
             view.setOnLongClickListener(v -> {
                 int position = getAdapterPosition();
                 if (position != RecyclerView.NO_POSITION && listener != null) {
