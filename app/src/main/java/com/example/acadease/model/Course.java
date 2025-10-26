@@ -1,7 +1,7 @@
 package com.example.acadease.model;
 
 import com.google.firebase.firestore.Exclude;
-import com.google.firebase.firestore.PropertyName; // Used to map snake_case to Java camelCase
+import com.google.firebase.firestore.PropertyName;
 
 public class Course {
 
@@ -11,21 +11,24 @@ public class Course {
     private String courseCode;
     private String title;
 
-    // FIX 1: Use @PropertyName to map snake_case or specific DB names
+    // Foreign Keys / Links
     @PropertyName("deptCode")
     private String departmentCode; // Maps to 'deptCode' in DB
 
     private String facultyId;
 
     @PropertyName("program_id")
-    private String programId; // Maps to 'program_id' in DB
+    private String programId;
 
     private int credits;
     private String description;
 
+    // NEW FIELD: Links this course to the semester it is taught in
+    private String semesterTaughtIn;
+
     public Course() {}
 
-    // --- Getters and Setters (Required for Firestore) ---
+    // --- Getters and Setters ---
 
     @Exclude public String getId() { return id; }
     @Exclude public void setId(String id) { this.id = id; }
@@ -49,8 +52,12 @@ public class Course {
     @PropertyName("program_id")
     public void setProgramId(String programId) { this.programId = programId; }
 
+    // PROGRESSION FIELD
+    public String getSemesterTaughtIn() { return semesterTaughtIn; }
+    public void setSemesterTaughtIn(String semesterTaughtIn) { this.semesterTaughtIn = semesterTaughtIn; }
+
     public int getCredits() { return credits; }
-    public void setCredits(int credits) { this.credits = credits; } // This expects a NUMBER in DB
+    public void setCredits(int credits) { this.credits = credits; }
 
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }

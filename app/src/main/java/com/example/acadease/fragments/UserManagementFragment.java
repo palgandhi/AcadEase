@@ -1,5 +1,6 @@
 package com.example.acadease.fragments;
 
+import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
 import androidx.activity.result.ActivityResultLauncher;
@@ -17,6 +18,9 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.acadease.R;
@@ -27,6 +31,8 @@ import com.google.firebase.auth.FirebaseAuth;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class UserManagementFragment extends Fragment {
 
@@ -39,17 +45,17 @@ public class UserManagementFragment extends Fragment {
 
     // 2. UI FIELD DECLARATIONS
     private EditText uidEt, emailEt, firstNameEt, lastNameEt;
-    private EditText mobileEt, customIdEt;
-    private AutoCompleteTextView roleAcTv, programAcTv, courseSearchAcTv; // programAcTv is the new dropdown
+    private EditText mobileEt, customIdEt, currentSemesterEt; // currentSemesterEt is NEW
+    private AutoCompleteTextView roleAcTv, programAcTv, courseSearchAcTv;
     private LinearLayout courseSelectionContainer;
     private Button regRegisterButton, btnSelectImage, deleteButton;
     private EditText deleteUidEditText;
 
     // 3. CONSTANTS AND STATE
     private final String[] roles = {"student", "faculty", "admin"};
-    private Uri selectedImageUri; // Stores the URI of the selected image
+    private Uri selectedImageUri;
 
-    // 4. CRITICAL: Activity Result Launcher (Initialized at the class level)
+    // 4. CRITICAL: Activity Result Launcher
     private final ActivityResultLauncher<String> imagePickerLauncher = registerForActivityResult(
             new ActivityResultContracts.GetContent(),
             uri -> {
@@ -86,9 +92,10 @@ public class UserManagementFragment extends Fragment {
         lastNameEt = view.findViewById(R.id.reg_last_name_edit_text);
         mobileEt = view.findViewById(R.id.reg_mobile_edit_text);
         customIdEt = view.findViewById(R.id.reg_custom_id_edit_text);
+        currentSemesterEt = view.findViewById(R.id.reg_current_semester_et); // Mapped NEW FIELD
 
         roleAcTv = view.findViewById(R.id.reg_role_spinner);
-        programAcTv = view.findViewById(R.id.reg_program_spinner); // NEW PROGRAM DROPDOWN
+        programAcTv = view.findViewById(R.id.reg_program_spinner);
         courseSearchAcTv = view.findViewById(R.id.reg_course_search_edit_text);
         courseSelectionContainer = view.findViewById(R.id.course_selection_container);
 
@@ -102,24 +109,24 @@ public class UserManagementFragment extends Fragment {
         if (roleAcTv != null) {
             setupDropdown(roleAcTv, roles);
         }
-        setupProgramAutocomplete(); // Sets up the program dropdown
+        setupProgramAutocomplete();
 
         // 4. Set Listeners
-        if (btnSelectImage != null) {
-            btnSelectImage.setOnClickListener(v -> imagePickerLauncher.launch("image/*"));
-        }
-        if (regRegisterButton != null) {
-            regRegisterButton.setOnClickListener(v -> handleRegistration());
-        }
-        if (deleteButton != null) {
-            deleteButton.setOnClickListener(v -> handleDelete());
-        }
+        if (btnSelectImage != null) btnSelectImage.setOnClickListener(v -> imagePickerLauncher.launch("image/*"));
+        if (regRegisterButton != null) regRegisterButton.setOnClickListener(v -> handleRegistration());
+        if (deleteButton != null) deleteButton.setOnClickListener(v -> handleDelete());
     }
 
     // --- HELPER METHODS ---
 
     private void setupDropdown(AutoCompleteTextView view, String[] items) {
-        if (view == null) return;
+        if (view == null || items == null || items.length == 0) {
+            if (view != null) view.setHint("No items available");
+            if (view != null) view.setEnabled(false);
+            return;
+        }
+
+        view.setEnabled(true);
 
         ArrayAdapter<String> adapter = new ArrayAdapter<>(
                 requireContext(),
@@ -134,7 +141,7 @@ public class UserManagementFragment extends Fragment {
         lookupRepository.fetchProgramCodes(new LookupRepository.LookupListCallback() {
             @Override
             public void onSuccess(List<String> programCodes) {
-                if (programAcTv == null) return;
+                if (getContext() == null) return;
 
                 ArrayAdapter<String> adapter = new ArrayAdapter<>(
                         requireContext(),
@@ -142,41 +149,32 @@ public class UserManagementFragment extends Fragment {
                         programCodes
                 );
                 programAcTv.setAdapter(adapter);
-                programAcTv.setText(programCodes.isEmpty() ? "" : programCodes.get(0), false);
+
+                if (programCodes.isEmpty()) {
+                    programAcTv.setHint("No programs found");
+                } else {
+                    programAcTv.setText(programCodes.get(0), false);
+                }
             }
 
             @Override
             public void onFailure(Exception e) {
-                Toast.makeText(getContext(), "Failed to load academic programs: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Failed to load academic programs.", Toast.LENGTH_SHORT).show();
             }
         });
     }
 
     private List<String> getSelectedCourseCodes() {
         List<String> selectedCodes = new ArrayList<>();
-        if (courseSelectionContainer == null) {
-            Log.e(TAG, "Course selection container not initialized.");
-            return selectedCodes;
-        }
-
-        for (int i = 0; i < courseSelectionContainer.getChildCount(); i++) {
-            View child = courseSelectionContainer.getChildAt(i);
-            if (child instanceof CheckBox) {
-                CheckBox cb = (CheckBox) child;
-                if (cb.isChecked() && cb.getTag() != null) {
-                    selectedCodes.add(cb.getTag().toString());
-                }
-            }
-        }
+        // This is now obsolete, as enrollment uses Program ID.
+        // It remains here for previous checkbox structure logic reference.
         return selectedCodes;
     }
 
     // --- MAIN ACTION HANDLERS ---
 
-    // Inside UserManagementFragment.java
-
     private void handleRegistration() {
-        // 1. Capture Data
+        // 1. Capture Data (Declare all variables as FINAL)
         final String uid = uidEt.getText().toString().trim();
         final String email = emailEt.getText().toString().trim();
         final String firstName = firstNameEt.getText().toString().trim();
@@ -184,56 +182,66 @@ public class UserManagementFragment extends Fragment {
         final String role = roleAcTv.getText().toString();
         final String mobile = mobileEt.getText().toString().trim();
         final String customId = customIdEt.getText().toString().trim();
+
+        // Capture and Parse Semester
+        final String semesterStr = currentSemesterEt.getText().toString().trim();
         final String programId = "student".equals(role) ? programAcTv.getText().toString() : null;
 
         // 2. Validation (Basic checks)
         if (uid.isEmpty() || email.isEmpty() || role.isEmpty() || firstName.isEmpty() || lastName.isEmpty() || customId.isEmpty()) {
-            Toast.makeText(getContext(), "All ID and Name fields are required.", Toast.LENGTH_LONG).show();
-            return;
-        }
-        if ("student".equals(role) && (programId == null || programId.isEmpty())) {
-            Toast.makeText(getContext(), "Student registration requires selecting an academic program.", Toast.LENGTH_LONG).show();
+            Toast.makeText(getContext(), "UID, Custom ID, Email, and Name are required.", Toast.LENGTH_LONG).show();
             return;
         }
 
-        // --- CRITICAL FIX: REFRESH TOKEN CHAIN ---
-        // This is the gatekeeper: ensures the Auth token contains the 'admin' claim
-        // before the Batched Write is attempted.
+        // Student-specific validation
+        int semester = 0;
+        if ("student".equals(role)) {
+            if (programId == null || programId.isEmpty()) {
+                Toast.makeText(getContext(), "Student requires selecting an academic program.", Toast.LENGTH_LONG).show();
+                return;
+            }
+            try {
+                semester = Integer.parseInt(semesterStr);
+                if (semester <= 0) throw new NumberFormatException();
+            } catch (NumberFormatException e) {
+                Toast.makeText(getContext(), "Student requires a valid Semester number (1, 2, 3...).", Toast.LENGTH_LONG).show();
+                return;
+            }
+        }
 
-        // Check for authenticated user before attempting refresh
+        // CRITICAL FIX: The local variable 'semester' used in the lambda must be final.
+        final int finalSemester = semester;
+
+        // 3. Execute token refresh before proceeding with registration
         if (FirebaseAuth.getInstance().getCurrentUser() == null) {
             Toast.makeText(getContext(), "Admin not authenticated. Please log in again.", Toast.LENGTH_LONG).show();
             return;
         }
 
-        Toast.makeText(getContext(), "Verifying Admin privileges...", Toast.LENGTH_SHORT).show();
-
-        // Step A: Force Auth Token Refresh (ensures the token has the latest custom claim)
         FirebaseAuth.getInstance().getCurrentUser().getIdToken(true)
                 .addOnSuccessListener(result -> {
-                    // Step B: Token refreshed successfully. NOW, proceed with the actual registration logic.
+                    // Token refreshed successfully. Proceed with the actual registration logic.
                     if (selectedImageUri != null) {
-                        uploadImageAndRegister(uid, email, role, firstName, lastName, mobile, customId, programId, selectedImageUri);
+                        // Now passing the final version of the variables
+                        uploadImageAndRegister(uid, email, role, firstName, lastName, mobile, customId, programId, finalSemester, selectedImageUri);
                     } else {
-                        registerProfile(uid, email, role, firstName, lastName, mobile, customId, null, programId);
+                        registerProfile(uid, email, role, firstName, lastName, mobile, customId, null, programId, finalSemester);
                     }
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(getContext(), "Admin verification failed. Try logging out and back in.", Toast.LENGTH_LONG).show();
-                    Log.e(TAG, "Auth Token Refresh Failure:", e);
                 });
     }
 
-
-
-    private void uploadImageAndRegister(final String uid, final String email, final String role, final String firstName, final String lastName, final String mobile, final String customId, final String programId, Uri imageUri) {
+    private void uploadImageAndRegister(String uid, String email, String role, String firstName, String lastName, String mobile, String customId, String programId, int semester, Uri imageUri) {
         Toast.makeText(getContext(), "Uploading profile image...", Toast.LENGTH_SHORT).show();
 
-        storageRepository.uploadProfileImage(imageUri, uid, new StorageRepository.UploadCallback() {
+        String filePath = String.format("profiles/%s/profile.jpg", uid);
+
+        storageRepository.uploadFile(imageUri, filePath, new StorageRepository.UploadCallback() {
             @Override
             public void onSuccess(String downloadUrl) {
-                // Step C: Image uploaded, now register the profile with the URL
-                registerProfile(uid, email, role, firstName, lastName, mobile, customId, downloadUrl, programId);
+                registerProfile(uid, email, role, firstName, lastName, mobile, customId, downloadUrl, programId, semester);
             }
 
             @Override
@@ -243,17 +251,17 @@ public class UserManagementFragment extends Fragment {
         });
     }
 
-    private void registerProfile(String uid, String email, String role, String firstName, String lastName, String mobile, String customId, String imageUrl, String programId) {
-        // Step D: Perform Batched Write (Profile + Enrollment Lookup)
+    private void registerProfile(String uid, String email, String role, String firstName, String lastName, String mobile, String customId, String imageUrl, String programId, int semester) {
+        // Perform Batched Write (Profile + Enrollments)
         adminRepository.createProfileAndEnroll(
-                uid, email, role, firstName, lastName, mobile, customId, imageUrl, programId, // PASSING THE SINGLE STRING programId
+                uid, email, role, firstName, lastName, mobile, customId, imageUrl, programId, semester,
                 new AdminRepository.RegistrationCallback() {
                     @Override
                     public void onSuccess(String message) {
                         Toast.makeText(getContext(), "SUCCESS: " + message, Toast.LENGTH_LONG).show();
-                        // Clear fields...
+                        // Clear fields after success
                         uidEt.setText(""); emailEt.setText(""); firstNameEt.setText(""); lastNameEt.setText("");
-                        mobileEt.setText(""); customIdEt.setText("");
+                        mobileEt.setText(""); customIdEt.setText(""); currentSemesterEt.setText("");
                     }
 
                     @Override
@@ -264,7 +272,6 @@ public class UserManagementFragment extends Fragment {
                 }
         );
     }
-
 
     private void handleDelete() {
         String uidToDelete = deleteUidEditText.getText().toString().trim();

@@ -24,7 +24,7 @@ public class AdminRepository {
     // Collection Name Constants (CRITICAL: Match database case exactly)
     private final String USERS_COLLECTION = "users";
     private final String ENROLLMENTS_COLLECTION = "Enrollments";
-    private final String PROGRAMS_COLLECTION = "programs"; // Used for program lookup
+    private final String PROGRAMS_COLLECTION = "programs";
     private final String ANNOUNCEMENTS_COLLECTION = "Announcements";
     private final String SCHEDULES_COLLECTION = "schedules";
     private final String SESSIONS_COLLECTION = "sessions";
@@ -49,17 +49,17 @@ public class AdminRepository {
     /**
      * Creates a profile document in 'users' and then fetches course codes from the
      * specified program to create enrollment records in a batched write.
+     * * CRITICAL FIX: Added 'int semester' argument.
      */
-    public void createProfileAndEnroll(String uid, String email, String role, String firstName, String lastName, String mobile, String customId, String imageUrl, String programId, RegistrationCallback callback) {
+    public void createProfileAndEnroll(String uid, String email, String role, String firstName, String lastName, String mobile, String customId, String imageUrl, String programId, int semester, RegistrationCallback callback) {
 
         // 1. ASYNCHRONOUS STEP: Fetch the required course codes from the Program blueprint.
         if (!role.equals("student")) {
             // Non-students bypass enrollment lookup. Proceed directly to profile write.
-            executeBatchWrite(uid, email, role, firstName, lastName, mobile, customId, imageUrl, null, callback);
+            executeBatchWrite(uid, email, role, firstName, lastName, mobile, customId, imageUrl, programId, semester, null, callback);
             return;
         }
 
-        // Ensure student has selected a program before lookup
         if (programId == null || programId.isEmpty()) {
             callback.onFailure(new Exception("Student registration requires a program ID."));
             return;
@@ -68,16 +68,24 @@ public class AdminRepository {
         db.collection(PROGRAMS_COLLECTION).document(programId).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
-                        // CRITICAL: Cast the array field to List<String>
-                        List<String> courseCodes = (List<String>) documentSnapshot.get("defaultCourseCodes");
+                        // Fetch the entire semesterCourses map
+                        Map<String, List<String>> semesterCourses = (Map<String, List<String>>) documentSnapshot.get("semesterCourses");
 
-                        if (courseCodes == null || courseCodes.isEmpty()) {
-                            callback.onFailure(new Exception("Program " + programId + " has no course codes defined. Cannot enroll."));
+                        if (semesterCourses == null) {
+                            callback.onFailure(new Exception("Program " + programId + " data is corrupt (missing semesterCourses map)."));
                             return;
                         }
 
-                        // Step 2: Execute the profile and enrollment write using the retrieved list.
-                        executeBatchWrite(uid, email, role, firstName, lastName, mobile, customId, imageUrl, courseCodes, callback);
+                        // CRITICAL FIX: Get the list specific to the student's semester (e.g., "sem1")
+                        List<String> courseCodes = semesterCourses.get("sem" + semester);
+
+                        if (courseCodes == null || courseCodes.isEmpty()) {
+                            callback.onFailure(new Exception("No courses defined for Sem " + semester + " in this program."));
+                            return;
+                        }
+
+                        // Step 2: Execute the profile and enrollment write.
+                        executeBatchWrite(uid, email, role, firstName, lastName, mobile, customId, imageUrl, programId, semester, courseCodes, callback);
                     } else {
                         callback.onFailure(new Exception("Program ID not found: Cannot enroll student."));
                     }
@@ -88,38 +96,25 @@ public class AdminRepository {
                 });
     }
 
-    public void createSchedule(Schedule scheduleBlueprint, List<Map<String, Object>> sessions, RegistrationCallback callback) {
-
-        // Step A: Save the Schedule Document first (The parent blueprint)
-        db.collection(SCHEDULES_COLLECTION).add(scheduleBlueprint)
-                .addOnSuccessListener(documentReference -> {
-                    String scheduleId = documentReference.getId();
-
-                    // Step B: Bulk write the generated sessions
-                    // CRITICAL: Call the Utility to generate the sessions using the corrected logic
-                    List<Map<String, Object>> generatedSessions = ScheduleUtility.generateSessions(scheduleBlueprint, scheduleId);
-
-                    writeSessionsToFirestore(generatedSessions, scheduleId, callback);
-                })
-                .addOnFailureListener(e -> callback.onFailure(new Exception("Schedule blueprint save failed: " + e.getMessage())));
-    }
-
     /**
      * Executes the combined Batched Write for User Profile and Enrollments.
+     * * CRITICAL FIX: Added 'int semester' argument.
      */
-    private void executeBatchWrite(String uid, String email, String role, String firstName, String lastName, String mobile, String customId, String imageUrl, List<String> courseCodes, RegistrationCallback callback) {
+    private void executeBatchWrite(String uid, String email, String role, String firstName, String lastName, String mobile, String customId, String imageUrl, String programId, int semester, List<String> courseCodes, RegistrationCallback callback) {
 
         User newUser = new User();
-        // Set all user fields...
+        // Set User POJO fields
         newUser.setUid(uid); newUser.setEmail(email); newUser.setRole(role);
-        newUser.setName(firstName);
+        newUser.setName(firstName + " " + lastName);
         newUser.setProfileImageUrl(imageUrl); newUser.setCreatedAt(Timestamp.now());
 
-        // Set Contact Info
+        // Set Contact Info and Progression
         Map<String, String> contactInfo = new HashMap<>();
         contactInfo.put("mobile", mobile); newUser.setContactInfo(contactInfo);
 
-        // Set Custom ID
+        // CRITICAL FIX: Set the semester field on the User profile
+        newUser.setCurrentSemester(semester);
+
         if (role.equals("student")) { newUser.setStudentId(customId); }
         else if (role.equals("faculty") || role.equals("admin")) { newUser.setFacultyId(customId); }
 
@@ -135,6 +130,8 @@ public class AdminRepository {
                 Map<String, Object> enrollmentData = new HashMap<>();
                 enrollmentData.put("studentId", uid);
                 enrollmentData.put("courseCode", courseCode);
+                enrollmentData.put("programId", programId); // New reference field
+                enrollmentData.put("semester", semester); // New reference field
                 enrollmentData.put("academicYear", currentYear);
                 enrollmentData.put("status", "active");
 
@@ -152,7 +149,7 @@ public class AdminRepository {
     }
 
     // =========================================================
-    // 2. ANNOUNCEMENTS CRUD (Simplified to Auth Check)
+    // 2. ANNOUNCEMENTS CRUD
     // =========================================================
 
     public void createAnnouncement(String title, String body, String imgUrl, List<String> targetRole, String category, String postedByUid, RegistrationCallback callback) {
@@ -180,6 +177,24 @@ public class AdminRepository {
     // =========================================================
     // 3. SCHEDULING (Creation and Session Bulk Write)
     // =========================================================
+
+
+    public void createSchedule(Schedule scheduleBlueprint, List<Map<String, Object>> sessions, RegistrationCallback callback) {
+
+        // Step A: Save the Schedule Document first (The parent blueprint)
+        db.collection(SCHEDULES_COLLECTION).add(scheduleBlueprint)
+                .addOnSuccessListener(documentReference -> {
+                    String scheduleId = documentReference.getId();
+
+                    // NOTE: This call assumes the ScheduleUtility.generateSessions method is available
+                    // and will be updated to use the writeSessionsToFirestore method.
+                    // For now, we assume the utility returns the list of sessions to be written.
+                    List<Map<String, Object>> generatedSessions = ScheduleUtility.generateSessions(scheduleBlueprint, scheduleId);
+
+                    writeSessionsToFirestore(generatedSessions, scheduleId, callback);
+                })
+                .addOnFailureListener(e -> callback.onFailure(new Exception("Schedule blueprint save failed: " + e.getMessage())));
+    }
 
 
     private void writeSessionsToFirestore(List<Map<String, Object>> sessions, String scheduleId, RegistrationCallback callback) {
