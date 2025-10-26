@@ -15,14 +15,16 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.util.Log;
+import android.widget.EditText;
+import androidx.appcompat.app.AlertDialog;
 
 import com.example.acadease.R;
 import com.example.acadease.data.FacultyRepository;
 import com.example.acadease.data.LookupRepository;
 import com.example.acadease.adapters.ResultsAdapter;
-import com.example.acadease.model.Assignment;
 import com.example.acadease.model.Course;
 import com.example.acadease.model.User;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 
 import java.util.ArrayList;
@@ -39,6 +41,7 @@ public class FacultyResultsFragment extends Fragment {
     private AutoCompleteTextView courseDropdown, examTypeDropdown;
     private Button btnSaveResults, btnUploadFinalGrade;
     private TextView maxPointsDisplay;
+    private FloatingActionButton fabCreateExamType;
 
     private FacultyRepository facultyRepository;
     private LookupRepository lookupRepository;
@@ -46,11 +49,8 @@ public class FacultyResultsFragment extends Fragment {
 
     private String selectedCourseCode;
     private String selectedExamType;
-    private int maxExamPoints = 100; // Default or fetched max points
+    private int maxExamPoints = 100; // Will be updated by fetchExamMaxPoints
     private List<User> currentCourseRoster = new ArrayList<>();
-    private final String[] examTypes = {"Mid-Semester", "Final Theory", "Lab Practical"};
-    private List<Course> coursesTaught = new ArrayList<>();
-    private List<Assignment> courseAssignments = new ArrayList<>();
 
     public FacultyResultsFragment() {}
 
@@ -72,43 +72,49 @@ public class FacultyResultsFragment extends Fragment {
         examTypeDropdown = view.findViewById(R.id.results_exam_type_dropdown);
         btnSaveResults = view.findViewById(R.id.btn_save_course_results);
         btnUploadFinalGrade = view.findViewById(R.id.btn_upload_final_grade);
-        // maxPointsDisplay = view.findViewById(R.id.max_points_display_tv); // Assuming this is mapped
+        maxPointsDisplay = view.findViewById(R.id.max_points_display_tv);
+        fabCreateExamType = view.findViewById(R.id.fab_create_exam_type);
+
 
         // Setup RecyclerView
         resultsRecyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
 
         // 2. Setup Dropdowns
-        setupDropdown(examTypeDropdown, examTypes);
-        setupCourseDropdown();
+        setupCourseDropdown(); // Loads courses and sets initial listener
 
         // 3. Set Listeners
         courseDropdown.setOnItemClickListener((adapterView, v, position, id) -> {
             String selection = (String) adapterView.getItemAtPosition(position);
             selectedCourseCode = selection.split(" - ")[0].trim();
             Log.d(TAG, "Course selected: " + selectedCourseCode);
-            // Load the roster for the selected course
-            loadRosterForGrading(selectedCourseCode);
+            loadRosterForGrading(selectedCourseCode); // Load students when course is selected
         });
 
         examTypeDropdown.setOnItemClickListener((adapterView, v, position, id) -> {
             selectedExamType = (String) adapterView.getItemAtPosition(position);
-            // NOTE: In a real app, you would load max points for the selected exam type here.
-            // For now, we assume maxPoints is 100.
+            fetchAndSetMaxPoints(selectedExamType);
         });
 
         btnSaveResults.setOnClickListener(v -> handleSaveExamResults());
         btnUploadFinalGrade.setOnClickListener(v -> handleUploadFinalGrade());
+
+        // FAB Listener to create a new exam type
+        if (fabCreateExamType != null) {
+            fabCreateExamType.setOnClickListener(v -> showCreateExamDialog());
+        }
     }
 
-    // --- DROPDOWN SETUP ---
+    // --- DROPDOWN SETUP HELPERS ---
 
     private void setupDropdown(AutoCompleteTextView view, String[] items) {
+        // CRITICAL FIX: Handles empty array gracefully
         if (view == null || items == null || items.length == 0) {
-            // CRITICAL FIX: Add check for empty array and return immediately
-            // This prevents the ArrayIndexOutOfBoundsException
-            view.setHint("No items available"); // Set a helpful hint
+            if (view != null) view.setHint("No items available");
+            if (view != null) view.setEnabled(false);
             return;
         }
+
+        view.setEnabled(true);
 
         ArrayAdapter<String> adapter = new ArrayAdapter<>(
                 requireContext(),
@@ -116,32 +122,33 @@ public class FacultyResultsFragment extends Fragment {
                 items
         );
         view.setAdapter(adapter);
-        view.setText(items[0], false); // Sets the default selection safely
+        view.setText(items[0], false); // Set default selection
     }
 
     public void setupCourseDropdown() {
-        String facultyUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        String facultyUid = FirebaseAuth.getInstance().getCurrentUser() != null
+                ? FirebaseAuth.getInstance().getCurrentUser().getUid()
+                : "DEFAULT_UID";
 
-        // Step 1: Fetch all courses taught by the faculty
         facultyRepository.fetchCoursesTaught(facultyUid, new FacultyRepository.CourseListCallback() {
             @Override
             public void onSuccess(List<Course> courses) {
-                coursesTaught = courses;
+                if (getContext() == null || courses.isEmpty()) {
+                    Toast.makeText(getContext(), "No assigned courses found.", Toast.LENGTH_SHORT).show();
+                    return;
+                }
 
-                // Step 2: Fetch all defined exam types
-                facultyRepository.fetchExamTypes(new FacultyRepository.ExamTypeCallback() {
-                    @Override
-                    public void onSuccess(List<String> examTitles) {
-                        // Step 3: Combine and display the dropdowns
-                        populateGradingDropdowns(courses, examTitles);
-                    }
+                List<String> courseDisplayList = courses.stream()
+                        .map(c -> String.format("%s - %s", c.getCourseCode(), c.getTitle()))
+                        .collect(Collectors.toList());
 
-                    @Override
-                    public void onFailure(Exception e) {
-                        Toast.makeText(getContext(), "Failed to load exam types.", Toast.LENGTH_SHORT).show();
-                    }
-                });
+                setupDropdown(courseDropdown, courseDisplayList.toArray(new String[0]));
+
+                selectedCourseCode = courses.get(0).getCourseCode();
+
+                fetchAndSetupExamTypeDropdown();
             }
+
             @Override
             public void onFailure(Exception e) {
                 Toast.makeText(getContext(), "Failed to load assigned courses.", Toast.LENGTH_SHORT).show();
@@ -149,28 +156,61 @@ public class FacultyResultsFragment extends Fragment {
         });
     }
 
-    private void populateGradingDropdowns(List<Course> courses, List<String> examTitles) {
-        // 1. Create Dropdown 1: Course Selection (Remains the same)
-        List<String> courseDisplayList = courses.stream()
-                .map(c -> String.format("%s - %s", c.getCourseCode(), c.getTitle()))
-                .collect(Collectors.toList());
+    private void fetchAndSetupExamTypeDropdown() {
+        if (selectedCourseCode == null) return;
 
-        // Setup the course dropdown (as before)
+        lookupRepository.fetchExamTypeTitles(selectedCourseCode, new LookupRepository.ExamTypeTitlesCallback() {
+            @Override
+            public void onSuccess(List<String> examTitles) {
+                if (getContext() == null) return;
 
-        // 2. Create Dropdown 2: Exam Type Selection (Dynamic List)
-        String[] examArray = examTitles.toArray(new String[0]);
-        setupDropdown(examTypeDropdown, examArray);
+                String[] examArray = examTitles.toArray(new String[0]);
+                setupDropdown(examTypeDropdown, examArray);
 
-        // NOTE: The logic to combine Assignments and Exams into a SINGLE dropdown
-        // is highly complex. For simplicity, we keep the two functions separate:
-        // A) Grade Assignments (using AssignmentListFragment)
-        // B) Grade Manual Exams (using this fragment's manual input)
+                if (examArray.length > 0) {
+                    selectedExamType = examArray[0];
+                    fetchAndSetMaxPoints(selectedExamType);
+                } else {
+                    selectedExamType = null;
+                    maxExamPoints = 0;
+                    if (maxPointsDisplay != null) maxPointsDisplay.setText("Max: N/A");
+                    Toast.makeText(getContext(), "No exam types defined for this course.", Toast.LENGTH_LONG).show();
+                }
 
-        // If you prefer the unified list, it needs a dedicated model:
-        // [CS101 - Mid-Term Exam (EXAM)], [CS101 - Report 1 (ASSIGNMENT)]
+                // Load the student roster after both course and exam type are known
+                loadRosterForGrading(selectedCourseCode);
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                Toast.makeText(getContext(), "Failed to load exam categories.", Toast.LENGTH_SHORT).show();
+                setupDropdown(examTypeDropdown, new String[]{});
+            }
+        });
     }
 
-    // --- ROSTER LOADING AND GRADING ---
+    private void fetchAndSetMaxPoints(String examTitle) {
+        if (selectedCourseCode == null || examTitle == null) return;
+
+        facultyRepository.fetchExamMaxPoints(selectedCourseCode, examTitle, new FacultyRepository.ExamDetailCallback() {
+            @Override
+            public void onSuccess(int points) {
+                maxExamPoints = points;
+                if (maxPointsDisplay != null) maxPointsDisplay.setText("Max: " + maxExamPoints);
+                if (resultsAdapter != null) resultsAdapter.notifyDataSetChanged();
+            }
+            @Override
+            public void onFailure(Exception e) {
+                maxExamPoints = 0;
+                if (maxPointsDisplay != null) maxPointsDisplay.setText("Max: N/A");
+                Toast.makeText(getContext(), "Max Points for exam not found in DB.", Toast.LENGTH_SHORT).show();
+                if (resultsAdapter != null) resultsAdapter.notifyDataSetChanged();
+            }
+        });
+    }
+
+
+    // --- ROSTER LOADING ---
 
     private void loadRosterForGrading(String courseCode) {
         // Step 1: Fetch UIDs of all enrolled students
@@ -179,16 +219,19 @@ public class FacultyResultsFragment extends Fragment {
             public void onSuccess(List<String> studentUids) {
                 if (studentUids.isEmpty()) {
                     Toast.makeText(getContext(), "Course has no enrolled students.", Toast.LENGTH_SHORT).show();
+                    resultsRecyclerView.setAdapter(null);
+                    currentCourseRoster = new ArrayList<>();
                     return;
                 }
 
-                // Step 2: Bulk Lookup Student Profiles (Full User POJO needed)
+                // Step 2: Bulk Lookup Student Profiles
                 lookupRepository.fetchBulkStudentProfiles(studentUids, new LookupRepository.BulkProfileCallback() {
                     @Override
                     public void onSuccess(List<User> students) {
                         currentCourseRoster = students;
 
                         // 3. Attach Adapter
+                        // NOTE: Adapter now uses the current maxExamPoints value
                         resultsAdapter = new ResultsAdapter(requireContext(), students, maxExamPoints, lookupRepository);
                         resultsRecyclerView.setAdapter(resultsAdapter);
                     }
@@ -207,13 +250,19 @@ public class FacultyResultsFragment extends Fragment {
         });
     }
 
+    // --- GRADING AND SAVE LOGIC ---
+
     private void handleSaveExamResults() {
         if (selectedCourseCode == null || selectedExamType == null || resultsAdapter == null) {
             Toast.makeText(getContext(), "Please select a Course and Exam Type first.", Toast.LENGTH_LONG).show();
             return;
         }
 
-        // 1. Get Grades from Adapter
+        if (maxExamPoints == 0) {
+            Toast.makeText(getContext(), "Max Marks are 0. Cannot save scores.", Toast.LENGTH_LONG).show();
+            return;
+        }
+
         Map<String, Integer> gradesMap = resultsAdapter.getAllGrades();
 
         if (gradesMap.isEmpty()) {
@@ -221,17 +270,18 @@ public class FacultyResultsFragment extends Fragment {
             return;
         }
 
-        // 2. Call Repository to save grades to the exam_scores subcollection
+        // Call Repository to save grades to the exam_scores subcollection
         facultyRepository.saveExamScores(selectedCourseCode, selectedExamType, maxExamPoints, gradesMap, new FacultyRepository.RegistrationCallback() {
             @Override
             public void onSuccess(String message) {
                 Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
-                // Clear adapter data or refresh view if necessary
+                loadRosterForGrading(selectedCourseCode); // Refresh roster
             }
 
             @Override
             public void onFailure(Exception e) {
                 Toast.makeText(getContext(), "Exam score save failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                Log.e(TAG, "Exam score save failed: " + e.getMessage());
             }
         });
     }
@@ -242,8 +292,59 @@ public class FacultyResultsFragment extends Fragment {
             return;
         }
 
-        Toast.makeText(getContext(), "Final Grade Upload TBD (Logic too complex for client-side demo).", Toast.LENGTH_LONG).show();
+        Toast.makeText(getContext(), "Final Grade Upload initiated (Concept Only).", Toast.LENGTH_LONG).show();
+    }
 
-        // NOTE: This feature remains conceptual as it requires complex weighted average calculation.
+    // --- DIALOG LOGIC ---
+
+    private void showCreateExamDialog() {
+        if (selectedCourseCode == null) {
+            Toast.makeText(getContext(), "Please select a Course first.", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        // Inflate the custom dialog layout
+        View dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_create_exam, null);
+
+        final EditText examNameEt = dialogView.findViewById(R.id.dialog_exam_name_et);
+        final EditText maxMarksEt = dialogView.findViewById(R.id.dialog_max_marks_et);
+
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Define New Exam Category for " + selectedCourseCode)
+                .setView(dialogView)
+                .setPositiveButton("CREATE", (dialog, which) -> {
+                    String examName = examNameEt.getText().toString().trim();
+                    String maxMarksStr = maxMarksEt.getText().toString().trim();
+
+                    if (examName.isEmpty() || maxMarksStr.isEmpty()) {
+                        Toast.makeText(getContext(), "Both fields are required.", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    int maxMarks;
+                    try {
+                        maxMarks = Integer.parseInt(maxMarksStr);
+                    } catch (NumberFormatException e) {
+                        Toast.makeText(getContext(), "Max Marks must be a number.", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    // Call repository to save the new exam type
+                    facultyRepository.addNewExamType(selectedCourseCode, examName, maxMarks, new FacultyRepository.RegistrationCallback() {
+                        @Override
+                        public void onSuccess(String message) {
+                            Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
+                            // Refresh the exam types dropdown after creation
+                            fetchAndSetupExamTypeDropdown();
+                        }
+
+                        @Override
+                        public void onFailure(Exception e) {
+                            Toast.makeText(getContext(), "Error creating exam: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                        }
+                    });
+                })
+                .setNegativeButton("CANCEL", null)
+                .show();
     }
 }

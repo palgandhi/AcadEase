@@ -403,4 +403,48 @@ public class FacultyRepository {
                 })
                 .addOnFailureListener(callback::onFailure);
     }
+
+    public interface ExamDetailCallback {
+        void onSuccess(int maxPoints);
+        void onFailure(Exception e);
+    }
+
+    /**
+     * Fetches the max points for a given exam type from the 'exam_types' collection.
+     */
+    public void fetchExamMaxPoints(String courseCode, String examTitle, ExamDetailCallback callback) {
+        db.collection(COURSES_COLLECTION).document(courseCode)
+                .collection(EXAM_TYPES_COLLECTION) // Use the nested path
+                .document(examTitle).get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        Long points = documentSnapshot.getLong("maxPoints");
+                        callback.onSuccess(points != null ? points.intValue() : 0);
+                    } else {
+                        callback.onFailure(new Exception("Exam type not found for this course."));
+                    }
+                })
+                .addOnFailureListener(callback::onFailure);
+    }
+
+    /**
+     * Creates a new exam type document nested under a specific course.
+     */
+    public void addNewExamType(String courseCode, String examTitle, int maxPoints, RegistrationCallback callback) {
+
+        String examDocumentId = examTitle.replaceAll("[^a-zA-Z0-9\\-]", "_").toLowerCase();
+
+        // CRITICAL FIX: Target the nested subcollection path
+        DocumentReference examRef = db.collection(COURSES_COLLECTION).document(courseCode)
+                .collection(EXAM_TYPES_COLLECTION)
+                .document(examDocumentId);
+
+        Map<String, Object> examData = new HashMap<>();
+        examData.put("maxPoints", maxPoints);
+        examData.put("createdAt", Timestamp.now());
+
+        examRef.set(examData)
+                .addOnSuccessListener(aVoid -> callback.onSuccess("New exam type '" + examTitle + "' created for " + courseCode + "."))
+                .addOnFailureListener(e -> callback.onFailure(new Exception("Failed to create exam type: " + e.getMessage())));
+    }
 }

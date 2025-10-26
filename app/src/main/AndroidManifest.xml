@@ -12,6 +12,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AcadEase">
         <activity
+            android:name=".fragments.ExamInputFragment"
+            android:exported="false" />
+        <activity
             android:name=".fragments.SubmissionFragment"
             android:exported="false" />
         <activity

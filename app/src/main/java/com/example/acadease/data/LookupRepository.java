@@ -3,6 +3,7 @@ package com.example.acadease.data;
 import com.example.acadease.model.User; // CRITICAL: Import the User model
 import com.google.firebase.firestore.FieldPath;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
@@ -16,6 +17,8 @@ public class LookupRepository {
 
     // Collection Name Constants (CRITICAL: Match database case exactly)
     private final String PROGRAMS_COLLECTION = "programs";
+    private final String EXAM_TYPES_COLLECTION = "exam_types";
+
     private final String USERS_COLLECTION = "users";
     private final String COURSES_COLLECTION = "Courses";
 
@@ -100,6 +103,29 @@ public class LookupRepository {
                 .addOnFailureListener(callback::onFailure);
     }
 
+    public interface ExamTypeTitlesCallback { // New interface for fetching titles
+        void onSuccess(List<String> examTitles);
+        void onFailure(Exception e);
+    }
+
+    /**
+     * Fetches all available exam type titles from the 'exam_types' collection.
+     */
+    public void fetchExamTypeTitles(ExamTypeTitlesCallback callback) {
+        db.collection(EXAM_TYPES_COLLECTION)
+                .orderBy(FieldPath.documentId(), Query.Direction.ASCENDING)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    List<String> titles = new ArrayList<>();
+                    for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
+                        // The Document ID is the exam title (e.g., "Mid-Semester")
+                        titles.add(document.getId());
+                    }
+                    callback.onSuccess(titles);
+                })
+                .addOnFailureListener(callback::onFailure);
+    }
+
     /**
      * NEW METHOD: Fetches a list of full User profiles for the grading roster.
      */
@@ -125,5 +151,25 @@ public class LookupRepository {
                 .addOnFailureListener(callback::onFailure);
     }
 
-    // NOTE: fetchAllCourseCodes and fetchAllFacultyUids remain as implemented.
+    public void fetchExamTypeTitles(String courseCode, ExamTypeTitlesCallback callback) {
+        if (courseCode == null) {
+            callback.onFailure(new Exception("Course code is required to fetch exam types."));
+            return;
+        }
+
+        // Target the nested subcollection
+        db.collection(COURSES_COLLECTION).document(courseCode)
+                .collection(EXAM_TYPES_COLLECTION)
+                .orderBy(FieldPath.documentId(), Query.Direction.ASCENDING)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    List<String> titles = new ArrayList<>();
+                    for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
+                        titles.add(document.getId());
+                    }
+                    callback.onSuccess(titles);
+                })
+                .addOnFailureListener(callback::onFailure);
+    }
+
 }
