@@ -15,6 +15,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.acadease.CreateAnnouncementActivity;
+import com.example.acadease.ProfileActivity;
 import com.example.acadease.R;
 import com.example.acadease.adapters.AnnouncementAdapter;
 import com.example.acadease.data.AnnouncementRepository;
@@ -68,6 +69,12 @@ public class HomeFragment extends Fragment implements AnnouncementAdapter.OnAnno
         btnFilterSports = view.findViewById(R.id.btn_filter_sports);
         btnFilterAll = view.findViewById(R.id.btn_filter_all);
         btnFilterEvents = view.findViewById(R.id.btn_filter_events);
+
+        // Profile icon
+        View profileIcon = view.findViewById(R.id.profile_icon);
+        if (profileIcon != null) {
+            profileIcon.setOnClickListener(v -> startActivity(new Intent(requireContext(), ProfileActivity.class)));
+        }
 
         // Setup Header Greeting
         setupGreeting();

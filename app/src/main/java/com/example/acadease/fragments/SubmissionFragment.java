@@ -19,9 +19,12 @@ import com.example.acadease.data.FacultyRepository;
 import com.example.acadease.data.LookupRepository;
 import com.example.acadease.model.Submission;
 import com.example.acadease.adapters.SubmissionAdapter; // New adapter needed
+import com.example.acadease.model.Assignment;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Date;
+import java.util.Map;
 
 public class SubmissionFragment extends Fragment {
 
@@ -35,7 +38,11 @@ public class SubmissionFragment extends Fragment {
     private LookupRepository lookupRepository;
 
     private String assignmentId;
-    private String courseCode; // Will need to be passed if necessary
+    private String courseCode; // Passed from previous screen
+
+    private Date assignmentDueDate;
+    private int maxPoints;
+    private SubmissionAdapter adapter;
 
     public SubmissionFragment() {}
 
@@ -44,7 +51,7 @@ public class SubmissionFragment extends Fragment {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             assignmentId = getArguments().getString("ASSIGNMENT_ID");
-            // NOTE: For full safety, courseCode should also be retrieved here.
+            courseCode = getArguments().getString("COURSE_CODE");
         }
     }
 
@@ -67,22 +74,39 @@ public class SubmissionFragment extends Fragment {
 
         submissionsRecyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
 
-        if (assignmentId != null) {
-            assignmentHeader.setText("Submissions for: " + assignmentId);
-            loadSubmissions();
+        if (assignmentId != null && courseCode != null) {
+            assignmentHeader.setText("Loading submissions...");
+            fetchAssignmentAndLoad();
         } else {
-            assignmentHeader.setText("Error: Assignment Missing");
+            assignmentHeader.setText("Error: Missing assignment or course.");
         }
 
         btnSaveGrades.setOnClickListener(v -> handleSaveGrades());
     }
 
-    private void loadSubmissions() {
-        // Assumes courseCode is retrieved or passed. We will hardcode for now.
-        // NOTE: This must be updated to fetch assignments/submissions correctly.
-        String dummyCourseCode = "CS101";
+    private void fetchAssignmentAndLoad() {
+        facultyRepository.fetchAssignmentDetails(courseCode, assignmentId, new FacultyRepository.AssignmentDetailCallback() {
+            @Override
+            public void onSuccess(Assignment assignment) {
+                assignmentDueDate = assignment.getDueDate() != null ? assignment.getDueDate().toDate() : null;
+                maxPoints = assignment.getMaxPoints();
 
-        facultyRepository.fetchSubmissions(dummyCourseCode, assignmentId, new FacultyRepository.SubmissionListCallback() {
+                String header = String.format("Submissions for: %s | Max Points: %d", assignment.getTitle(), maxPoints);
+                assignmentHeader.setText(header);
+
+                loadSubmissions();
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                assignmentHeader.setText("Failed to load assignment details.");
+                Toast.makeText(getContext(), e.getMessage(), Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    private void loadSubmissions() {
+        facultyRepository.fetchSubmissions(courseCode, assignmentId, new FacultyRepository.SubmissionListCallback() {
             @Override
             public void onSuccess(List<Submission> submissions) {
                 if (getContext() == null) return;
@@ -93,9 +117,8 @@ public class SubmissionFragment extends Fragment {
                     Toast.makeText(getContext(), "No student submissions yet.", Toast.LENGTH_SHORT).show();
                 }
 
-                // TODO: Initialize SubmissionsAdapter and pass the list
-                // SubmissionAdapter adapter = new SubmissionAdapter(getContext(), submissions, lookupRepository);
-                // submissionsRecyclerView.setAdapter(adapter);
+                adapter = new SubmissionAdapter(requireContext(), submissions, assignmentDueDate, maxPoints, lookupRepository);
+                submissionsRecyclerView.setAdapter(adapter);
             }
 
             @Override
@@ -108,8 +131,29 @@ public class SubmissionFragment extends Fragment {
     }
 
     private void handleSaveGrades() {
-        // Logic to iterate over RecyclerView items, collect grades, and perform a Batched Write
-        Toast.makeText(getContext(), "Saving grades... (Logic TBD)", Toast.LENGTH_SHORT).show();
-        // TODO: Finalize logic to update grades in the database
+        if (adapter == null) {
+            Toast.makeText(getContext(), "No submissions to grade.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Map<String, Integer> gradesMap = adapter.getAllGrades();
+        if (gradesMap.isEmpty()) {
+            Toast.makeText(getContext(), "No grades entered.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        facultyRepository.updateSubmissionGrades(courseCode, assignmentId, gradesMap, new FacultyRepository.RegistrationCallback() {
+            @Override
+            public void onSuccess(String message) {
+                Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
+                // Refresh list to reflect graded marks
+                loadSubmissions();
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                Toast.makeText(getContext(), "Failed to save grades: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            }
+        });
     }
 }

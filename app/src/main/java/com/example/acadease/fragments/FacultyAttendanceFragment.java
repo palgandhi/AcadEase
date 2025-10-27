@@ -47,6 +47,7 @@ public class FacultyAttendanceFragment extends Fragment implements AttendanceSes
     private Button btnPrevDay, btnNextDay;
     private LinearLayout rosterContainer;
     private Button submitAttendanceButton;
+    private View rosterScrollView;
 
     // 2. Repositories and State
     private FacultyRepository facultyRepository;
@@ -83,6 +84,7 @@ public class FacultyAttendanceFragment extends Fragment implements AttendanceSes
         btnNextDay = view.findViewById(R.id.btn_next_day);
         rosterContainer = view.findViewById(R.id.attendance_roster_container);
         submitAttendanceButton = view.findViewById(R.id.btn_submit_attendance);
+        rosterScrollView = view.findViewById(R.id.roster_scroll_view);
 
         // Setup RecyclerView
         if (sessionRecyclerView != null) {
@@ -109,12 +111,12 @@ public class FacultyAttendanceFragment extends Fragment implements AttendanceSes
         if (isRosterVisible) {
             // Hide session selector controls, show roster input
             if (sessionRecyclerView != null) sessionRecyclerView.setVisibility(View.GONE);
-            if (rosterContainer != null) rosterContainer.setVisibility(View.VISIBLE);
+            if (rosterScrollView != null) rosterScrollView.setVisibility(View.VISIBLE);
             if (submitAttendanceButton != null) submitAttendanceButton.setVisibility(View.VISIBLE);
         } else {
             // Show session selector controls, hide roster input
             if (sessionRecyclerView != null) sessionRecyclerView.setVisibility(View.VISIBLE);
-            if (rosterContainer != null) rosterContainer.setVisibility(View.GONE);
+            if (rosterScrollView != null) rosterScrollView.setVisibility(View.GONE);
             if (submitAttendanceButton != null) submitAttendanceButton.setVisibility(View.GONE);
 
             if (rosterContainer != null) rosterContainer.removeAllViews();
@@ -201,6 +203,7 @@ public class FacultyAttendanceFragment extends Fragment implements AttendanceSes
         facultyRepository.fetchCourseRoster(courseCode, new FacultyRepository.RosterCallback() {
             @Override
             public void onSuccess(List<String> studentUids) {
+                currentRosterUids = studentUids;
                 if (studentUids.isEmpty()) {
                     Toast.makeText(getContext(), "No students currently enrolled in this course.", Toast.LENGTH_LONG).show();
                     displayRosterInput(new HashMap<>());

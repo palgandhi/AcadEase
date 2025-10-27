@@ -39,7 +39,7 @@ public class MainActivity extends AppCompatActivity {
         loginButton.setOnClickListener(v -> handleLogin());
 
         // Optional: Check if a user is already authenticated
-        checkCurrentAuthStatus();
+//        checkCurrentAuthStatus();
     }
 
     private void checkCurrentAuthStatus() {
@@ -53,9 +53,27 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onSuccess(User user) {
                     Toast.makeText(MainActivity.this, "Welcome back, " + user.getName() + "!", Toast.LENGTH_SHORT).show();
-                    // TODO: Navigate to the appropriate dashboard (Student, Faculty, or Admin)
                     Log.d(TAG, "Auto-login complete. Role: " + user.getRole());
-                    // finish(); // Close this activity
+
+                    // Role-based navigation (same as handleLogin)
+                    Intent intent;
+                    String role = user.getRole() != null ? user.getRole().toLowerCase() : "";
+
+                    if ("student".equals(role)) {
+                        intent = new Intent(MainActivity.this, StudentDashboardActivity.class);
+                    } else if ("faculty".equals(role)) {
+                        intent = new Intent(MainActivity.this, FacultyDashboardActivity.class);
+                    } else if ("admin".equals(role)) {
+                        intent = new Intent(MainActivity.this, AdminDashboardActivity.class);
+                    } else {
+                        Toast.makeText(MainActivity.this, "Error: Unknown role assigned.", Toast.LENGTH_LONG).show();
+                        return;
+                    }
+
+                    intent.putExtra("USER_UID", user.getUid());
+                    intent.putExtra("USER_ROLE", user.getRole());
+                    startActivity(intent);
+                    finish();
                 }
 
                 @Override

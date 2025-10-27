@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,15 +34,26 @@ public class SubmissionAdapter extends RecyclerView.Adapter<SubmissionAdapter.Vi
     private final Context context;
     private final LookupRepository lookupRepository;
     private final Date assignmentDueDate; // Passed from the AssignmentListFragment
+    private final int maxPoints;
 
     // Map to hold student UIDs and their names asynchronously
     private Map<String, String> studentNameCache = new HashMap<>();
+    // Map to hold grades keyed by studentId
+    private final Map<String, Integer> gradesMap = new HashMap<>();
 
-    public SubmissionAdapter(Context context, List<Submission> submissionList, Date assignmentDueDate, LookupRepository lookupRepository) {
+    public SubmissionAdapter(Context context, List<Submission> submissionList, Date assignmentDueDate, int maxPoints, LookupRepository lookupRepository) {
         this.context = context;
         this.submissionList = submissionList;
         this.assignmentDueDate = assignmentDueDate;
+        this.maxPoints = maxPoints;
         this.lookupRepository = lookupRepository;
+    }
+
+    // Optimization: allow fragment to preload names in bulk
+    public void setPreloadedNameCache(Map<String, String> cache) {
+        if (cache != null) {
+            this.studentNameCache.putAll(cache);
+        }
     }
 
     @NonNull
@@ -84,7 +97,7 @@ public class SubmissionAdapter extends RecyclerView.Adapter<SubmissionAdapter.Vi
 
             holder.btnDownloadFile.setVisibility(View.VISIBLE);
 
-            if (submittedDate.after(assignmentDueDate)) {
+            if (assignmentDueDate != null && submittedDate.after(assignmentDueDate)) {
                 long diff = submittedDate.getTime() - assignmentDueDate.getTime();
                 long daysLate = TimeUnit.DAYS.convert(diff, TimeUnit.MILLISECONDS);
                 holder.statusText.setText(String.format("Submitted (%d days late)", daysLate));
@@ -101,9 +114,37 @@ public class SubmissionAdapter extends RecyclerView.Adapter<SubmissionAdapter.Vi
         }
 
         // 3. Grading Input
-        holder.maxPointsText.setText(String.format("/ %d", submission.getGrade()));
-        holder.gradeInputEt.setText(String.valueOf(submission.getGrade() > 0 ? submission.getGrade() : ""));
+        holder.maxPointsText.setText(String.format("/ %d", maxPoints));
+        Integer existing = submission.getGrade() > 0 ? submission.getGrade() : gradesMap.get(studentUid);
+        holder.gradeInputEt.setText(existing != null ? String.valueOf(existing) : "");
         holder.gradeInputEt.setTag(submission.getId()); // Store the document ID for saving the grade
+
+        // Remove previous watcher if any
+        if (holder.textWatcher != null) {
+            holder.gradeInputEt.removeTextChangedListener(holder.textWatcher);
+        }
+        // Add watcher to update grades map
+        TextWatcher watcher = new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            @Override public void afterTextChanged(Editable s) {
+                String text = s.toString().trim();
+                if (text.isEmpty()) {
+                    gradesMap.remove(studentUid);
+                    return;
+                }
+                try {
+                    int val = Integer.parseInt(text);
+                    if (val < 0) val = 0;
+                    if (val > maxPoints) val = maxPoints;
+                    gradesMap.put(studentUid, val);
+                } catch (NumberFormatException e) {
+                    // ignore invalid
+                }
+            }
+        };
+        holder.gradeInputEt.addTextChangedListener(watcher);
+        holder.textWatcher = watcher;
 
         // 4. Download Listener
         holder.btnDownloadFile.setOnClickListener(v -> {
@@ -124,16 +165,14 @@ public class SubmissionAdapter extends RecyclerView.Adapter<SubmissionAdapter.Vi
 
     // Utility method to get all entered grades for Batched Update
     public Map<String, Integer> getAllGrades() {
-        // This method is called by the SubmissionsFragment when the faculty clicks 'Save All Grades'
-        // NOTE: A robust implementation would iterate through the RecyclerView views,
-        // but for safety, the fragment will manage grade updates in a Map.
-        return new HashMap<>();
+        return new HashMap<>(gradesMap);
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         public TextView studentName, statusText, maxPointsText;
         public EditText gradeInputEt;
         public Button btnDownloadFile;
+        public TextWatcher textWatcher;
 
         public ViewHolder(@NonNull View view) {
             super(view);

@@ -8,10 +8,18 @@
     android:background="?android:attr/colorBackground"
     tools:context=".fragments.FacultyAssignmentFragment">
 
+    <include
+        android:id="@+id/assignment_header"
+        layout="@layout/legacy_app_header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp" />
+
     <LinearLayout
         android:id="@+id/assignment_controls"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_below="@id/assignment_header"
         android:orientation="vertical"
         android:padding="16dp">
 

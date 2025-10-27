@@ -83,6 +83,11 @@ public class FacultyRepository {
         void onFailure(Exception e);
     }
 
+    public interface AssignmentDetailCallback {
+        void onSuccess(Assignment assignment);
+        void onFailure(Exception e);
+    }
+
     public interface RegistrationCallback { // Reused for general write success/failure
         void onSuccess(String message);
         void onFailure(Exception e);
@@ -263,6 +268,40 @@ public class FacultyRepository {
                     callback.onSuccess(submissions);
                 })
                 .addOnFailureListener(e -> callback.onFailure(e));
+    }
+
+    /**
+     * Fetch details for a single assignment document.
+     */
+    public void fetchAssignmentDetails(String courseCode, String assignmentId, AssignmentDetailCallback callback) {
+        if (courseCode == null || assignmentId == null) {
+            callback.onFailure(new Exception("Course code and assignment id are required."));
+            return;
+        }
+
+        db.collection(COURSES_COLLECTION)
+                .document(courseCode)
+                .collection("assignments")
+                .document(assignmentId)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        try {
+                            Assignment assignment = documentSnapshot.toObject(Assignment.class);
+                            if (assignment != null) {
+                                assignment.setId(documentSnapshot.getId());
+                                callback.onSuccess(assignment);
+                                return;
+                            }
+                        } catch (Exception e) {
+                            Log.e(TAG, "MAPPING FAILED for assignment doc " + assignmentId, e);
+                        }
+                        callback.onFailure(new Exception("Invalid assignment document."));
+                    } else {
+                        callback.onFailure(new Exception("Assignment not found."));
+                    }
+                })
+                .addOnFailureListener(callback::onFailure);
     }
 
     /**

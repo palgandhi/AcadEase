@@ -1,40 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.google.android.material.appbar.MaterialToolbar
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/app_header_bar"
     android:layout_width="match_parent"
     android:layout_height="?attr/actionBarSize"
-    android:background="@color/background_light_grey"
-    app:contentInsetStartWithNavigation="0dp"
-    app:title="AcadEase"
-    app:titleCentered="true"
-    app:titleTextColor="?attr/colorPrimary"
-    app:layout_scrollFlags="scroll|enterAlways">
+    android:orientation="horizontal"
+    android:paddingStart="16dp"
+    android:paddingEnd="16dp"
+    android:gravity="center_vertical"
+    android:background="@color/background_light_grey">
 
     <ImageView
         android:id="@+id/nav_drawer_icon"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:padding="8dp"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
         android:src="@drawable/menu"
         app:tint="?attr/colorPrimary"
-        android:contentDescription="Menu"
-        android:background="?attr/selectableItemBackgroundBorderless" />
+        android:contentDescription="Menu" />
 
-    <View
+    <TextView
         android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_weight="1"/>
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:gravity="center_horizontal"
+        android:text="AcadEase"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:textColor="?attr/colorPrimary" />
 
     <ImageView
         android:id="@+id/profile_icon"
         android:layout_width="40dp"
         android:layout_height="40dp"
-        android:padding="8dp"
+        android:padding="4dp"
         android:src="@drawable/person"
         app:tint="?attr/colorPrimary"
         android:contentDescription="Profile"
+        android:clickable="true"
+        android:focusable="true"
         android:background="?attr/selectableItemBackgroundBorderless" />
 
-</com.google.android.material.appbar.MaterialToolbar>
+</LinearLayout>

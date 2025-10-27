@@ -12,22 +12,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AcadEase">
         <activity
-            android:name=".fragments.ExamInputFragment"
-            android:exported="false" />
-        <activity
-            android:name=".fragments.SubmissionFragment"
-            android:exported="false" />
-        <activity
-            android:name=".fragments.AssignmentListFragment"
-            android:exported="false" />
-        <activity
-            android:name=".fragments.FacultyAssignmentFragment"
-            android:exported="false" />
-        <activity
-            android:name=".fragments.RosterInputFragment"
-            android:exported="false" />
-        <activity
-            android:name=".fragments.ScheduleFragment"
+            android:name=".ProfileActivity"
             android:exported="false" />
         <activity
             android:name=".CreateAnnouncementActivity"

@@ -9,7 +9,12 @@
     android:background="?android:attr/colorBackground"
     tools:context=".fragments.ScheduleManagementFragment">
 
-    <include layout="@layout/custom_app_header" />
+    <include
+        android:id="@+id/schedule_mgmt_header"
+        layout="@layout/legacy_app_header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp" />
 
     <ScrollView
         android:layout_width="match_parent"

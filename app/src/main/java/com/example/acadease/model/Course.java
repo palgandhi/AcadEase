@@ -23,8 +23,8 @@ public class Course {
     private int credits;
     private String description;
 
-    // NEW FIELD: Links this course to the semester it is taught in
-    private String semesterTaughtIn;
+    // NEW FIELD: Links this course to the semester it is taught in (stored as number in Firestore)
+    private int semesterTaughtIn;
 
     public Course() {}
 
@@ -53,8 +53,8 @@ public class Course {
     public void setProgramId(String programId) { this.programId = programId; }
 
     // PROGRESSION FIELD
-    public String getSemesterTaughtIn() { return semesterTaughtIn; }
-    public void setSemesterTaughtIn(String semesterTaughtIn) { this.semesterTaughtIn = semesterTaughtIn; }
+    public int getSemesterTaughtIn() { return semesterTaughtIn; }
+    public void setSemesterTaughtIn(int semesterTaughtIn) { this.semesterTaughtIn = semesterTaughtIn; }
 
     public int getCredits() { return credits; }
     public void setCredits(int credits) { this.credits = credits; }

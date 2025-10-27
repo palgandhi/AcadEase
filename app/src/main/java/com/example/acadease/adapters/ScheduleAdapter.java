@@ -32,16 +32,22 @@ public class ScheduleAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     private final List<ScheduleItem> scheduledItems;
     private final Context context;
     private final FacultyRepository facultyRepository;
+    private final AttendanceActionListener actionListener;
 
     private SimpleDateFormat timeFormat = new SimpleDateFormat("h:mm a", Locale.getDefault());
     private SimpleDateFormat dayHeaderFormat = new SimpleDateFormat("MMM dd, yyyy EEEE", Locale.getDefault());
 
 
-    public ScheduleAdapter(Context context, List<Session> allSessions, FacultyRepository facultyRepository) {
+    public ScheduleAdapter(Context context, List<Session> allSessions, FacultyRepository facultyRepository, AttendanceActionListener actionListener) {
         this.context = context;
         this.facultyRepository = facultyRepository;
+        this.actionListener = actionListener;
         // Group sessions immediately upon creation of the adapter
         this.scheduledItems = groupSessionsByDay(allSessions);
+    }
+
+    public interface AttendanceActionListener {
+        void onLogAttendance(Session session);
     }
 
     /**
@@ -166,45 +172,32 @@ public class ScheduleAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                 }
             });
 
-            // 4. Click Listener with Detailed Dialog
-            sessionHolder.itemView.setOnClickListener(v -> {
-                boolean isPast = session.getSessionTime().toDate().before(new Date());
-
-                String status = isPast ? "STATUS: PAST CLASS" : "STATUS: UPCOMING CLASS";
-                String currentProf = sessionHolder.professorVenue.getText().toString().split("\\|")[0].trim(); // Get current displayed prof string
-
-                String message = String.format(
-                        "Course: %s\nTime: %s - %s\nVenue: %s\nTopic: %s",
-                        sessionHolder.courseTitle.getText(),
-                        startTimeStr,
-                        endTimeStr,
-                        session.getVenue(),
-                        currentProf,
-                        session.getTopic() != null ? session.getTopic() : "N/A"
-                );
-
-                new AlertDialog.Builder(context)
-                        .setTitle(sessionHolder.courseTitle.getText().toString())
-                        .setMessage(message)
-                        .setPositiveButton(isPast ? "RECORD ATTENDANCE" : "CLOSE", (dialog, which) -> {
-                            if (isPast) {
-                                // TODO: Navigate to the Attendance Roster input screen (next feature)
-                                Toast.makeText(context, "Navigating to Roster for: " + session.getCourseCode(), Toast.LENGTH_SHORT).show();
-                            }
-                        })
-                        .show();
-            });
+            // 4. Action Button for Attendance (past sessions only)
+            boolean isPast = session.getSessionTime().toDate().before(new Date());
+            if (sessionHolder.actionButton != null) {
+                sessionHolder.actionButton.setVisibility(isPast ? View.VISIBLE : View.GONE);
+                if (sessionHolder.actionButton instanceof android.widget.Button) {
+                    ((android.widget.Button) sessionHolder.actionButton).setText("LOG ATTENDANCE");
+                }
+                sessionHolder.actionButton.setOnClickListener(v -> {
+                    if (isPast && actionListener != null) {
+                        actionListener.onLogAttendance(session);
+                    }
+                });
+            }
         }
     }
 
     public static class SessionViewHolder extends RecyclerView.ViewHolder {
         public TextView timeRange, courseTitle, professorVenue;
+        public View actionButton;
 
         public SessionViewHolder(@NonNull View view) {
             super(view);
             timeRange = view.findViewById(R.id.schedule_time_range);
             courseTitle = view.findViewById(R.id.schedule_course_title);
             professorVenue = view.findViewById(R.id.schedule_professor_venue);
+            actionButton = view.findViewById(R.id.action_button);
         }
     }
 

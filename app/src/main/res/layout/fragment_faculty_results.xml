@@ -8,10 +8,18 @@
     android:background="?android:attr/colorBackground"
     tools:context=".fragments.FacultyResultsFragment">
 
+    <include
+        android:id="@+id/results_header"
+        layout="@layout/legacy_app_header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp" />
+
     <LinearLayout
         android:id="@+id/results_controls"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_below="@id/results_header"
         android:orientation="vertical"
         android:padding="16dp">
 
@@ -91,8 +99,7 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/results_roster_recycler_view"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
+        android:layout_height="match_parent"
         android:layout_below="@id/results_controls"
         android:layout_above="@id/results_actions_container"
         android:paddingStart="16dp"

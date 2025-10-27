@@ -19,6 +19,8 @@ import com.example.acadease.data.AnnouncementRepository;
 import com.example.acadease.data.AdminRepository; // Needed for the delete method call
 import com.example.acadease.model.Announcement;
 import com.google.android.material.button.MaterialButton;
+import android.content.Intent;
+import com.example.acadease.ProfileActivity;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -68,6 +70,12 @@ public class FacultyAnnouncementFragment extends Fragment implements Announcemen
         btnFilterSports = view.findViewById(R.id.btn_filter_sports);
         btnFilterAll = view.findViewById(R.id.btn_filter_all);
         btnFilterEvents = view.findViewById(R.id.btn_filter_events);
+
+        // Profile icon
+        View profileIcon = view.findViewById(R.id.profile_icon);
+        if (profileIcon != null) {
+            profileIcon.setOnClickListener(v -> startActivity(new Intent(requireContext(), ProfileActivity.class)));
+        }
 
         // Setup Header Greeting
         setupGreeting();

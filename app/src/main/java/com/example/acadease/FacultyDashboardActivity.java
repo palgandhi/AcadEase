@@ -16,6 +16,7 @@ import com.example.acadease.fragments.FacultyResultsFragment;
 import com.example.acadease.fragments.ScheduleFragment; // NEW
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
+import android.util.Log;
 
 public class FacultyDashboardActivity extends AppCompatActivity {
 
@@ -30,6 +31,23 @@ public class FacultyDashboardActivity extends AppCompatActivity {
 
         // Set the listener for navigation clicks
         bottomNav.setOnItemSelectedListener(this::onNavigationItemSelected);
+
+        // Wire profile icon clicks from any fragment header
+        getSupportFragmentManager().registerFragmentLifecycleCallbacks(new FragmentManager.FragmentLifecycleCallbacks() {
+            @Override
+            public void onFragmentViewCreated(FragmentManager fm, Fragment f, android.view.View v, android.os.Bundle savedInstanceState) {
+                android.view.View profileIcon = v.findViewById(R.id.profile_icon);
+                if (profileIcon != null) {
+                    Log.d("FacultyDashboard", "Profile icon found in fragment: " + f.getClass().getSimpleName());
+                    profileIcon.setOnClickListener(view -> {
+                        Log.d("FacultyDashboard", "Profile icon clicked! Opening ProfileActivity");
+                        startActivity(new Intent(FacultyDashboardActivity.this, ProfileActivity.class));
+                    });
+                } else {
+                    Log.d("FacultyDashboard", "Profile icon NOT found in fragment: " + f.getClass().getSimpleName());
+                }
+            }
+        }, true);
 
         // Load the initial fragment (Announcements/Home)
         if (savedInstanceState == null) {

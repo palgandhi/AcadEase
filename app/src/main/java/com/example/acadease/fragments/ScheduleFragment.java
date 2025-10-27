@@ -51,9 +51,11 @@ public class ScheduleFragment extends Fragment {
 
     // Repositories
     private FacultyRepository facultyRepository;
+    private com.example.acadease.data.StudentRepository studentRepository;
 
     // Date State Management
     private String userRole = "faculty";
+    public static final String ARG_USER_ROLE = "ARG_USER_ROLE";
     private String userUid;
     private Calendar currentWeekStart; // Used for query start
     private Calendar currentWeekEnd;   // Used for query end
@@ -72,13 +74,36 @@ public class ScheduleFragment extends Fragment {
         return inflater.inflate(R.layout.activity_schedule_fragment, container, false);
     }
 
+    private void navigateToRoster(Session session) {
+        Bundle args = new Bundle();
+        args.putString("SESSION_ID", session.getId());
+        args.putString("COURSE_CODE", session.getCourseCode());
+
+        RosterInputFragment fragment = new RosterInputFragment();
+        fragment.setArguments(args);
+
+        requireActivity().getSupportFragmentManager().beginTransaction()
+                .replace(R.id.fragment_container, fragment)
+                .addToBackStack(null)
+                .commit();
+    }
+
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
         // Initialization
         facultyRepository = new FacultyRepository();
+        studentRepository = new com.example.acadease.data.StudentRepository();
         userUid = FirebaseAuth.getInstance().getCurrentUser() != null ? FirebaseAuth.getInstance().getCurrentUser().getUid() : "DEFAULT_UID";
+
+        // Allow overriding role via args so we can reuse this for students
+        if (getArguments() != null && getArguments().containsKey(ARG_USER_ROLE)) {
+            String role = getArguments().getString(ARG_USER_ROLE);
+            if (role != null && !role.trim().isEmpty()) {
+                userRole = role;
+            }
+        }
 
         // 1. Map UI Elements
         calendarGrid = view.findViewById(R.id.schedule_calendar_grid);
@@ -184,31 +209,53 @@ public class ScheduleFragment extends Fragment {
 
         Toast.makeText(requireContext(), "Fetching schedule for week...", Toast.LENGTH_SHORT).show();
 
-        facultyRepository.fetchScheduleSessions(userUid, userRole, start, end, new FacultyRepository.ScheduleSessionsCallback() {
-            @Override
-            public void onSuccess(List<Session> sessions) {
-                if (getContext() == null) return;
-
-                if (sessions.isEmpty()) {
-                    Toast.makeText(requireContext(), "No classes scheduled for this week.", Toast.LENGTH_LONG).show();
-                    detailList.setAdapter(new ScheduleAdapter(requireContext(), new ArrayList<>(), facultyRepository));
-                } else {
-                    // 1. Draw the full Calendar Grid
-                    drawCalendarGrid(sessions);
-
-                    // 2. CRITICAL FIX: The detail list must always show the full week's sessions.
-                    // The adapter handles the grouping/headers.
-                    ScheduleAdapter adapter = new ScheduleAdapter(requireContext(), sessions, facultyRepository);
-                    detailList.setAdapter(adapter);
+        if ("student".equalsIgnoreCase(userRole)) {
+            studentRepository.fetchWeeklySessions(userUid, start, end, new com.example.acadease.data.StudentRepository.SessionsCallback() {
+                @Override
+                public void onSuccess(List<Session> sessions) {
+                    if (getContext() == null) return;
+                    if (sessions.isEmpty()) {
+                        Toast.makeText(requireContext(), "No classes scheduled for this week.", Toast.LENGTH_LONG).show();
+                        detailList.setAdapter(new ScheduleAdapter(requireContext(), new ArrayList<>(), facultyRepository, s -> {}));
+                    } else {
+                        drawCalendarGrid(sessions);
+                        ScheduleAdapter adapter = new ScheduleAdapter(requireContext(), sessions, facultyRepository, s -> {});
+                        detailList.setAdapter(adapter);
+                    }
                 }
-            }
+                @Override
+                public void onFailure(Exception e) {
+                    if (getContext() == null) return;
+                    Toast.makeText(requireContext(), "Failed to load schedule: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                }
+            });
+        } else {
+            facultyRepository.fetchScheduleSessions(userUid, userRole, start, end, new FacultyRepository.ScheduleSessionsCallback() {
+                @Override
+                public void onSuccess(List<Session> sessions) {
+                    if (getContext() == null) return;
 
-            @Override
-            public void onFailure(Exception e) {
-                if (getContext() == null) return;
-                Toast.makeText(requireContext(), "Failed to load schedule: " + e.getMessage(), Toast.LENGTH_LONG).show();
-            }
-        });
+                    if (sessions.isEmpty()) {
+                        Toast.makeText(requireContext(), "No classes scheduled for this week.", Toast.LENGTH_LONG).show();
+                        detailList.setAdapter(new ScheduleAdapter(requireContext(), new ArrayList<>(), facultyRepository, session -> navigateToRoster(session)));
+                    } else {
+                        // 1. Draw the full Calendar Grid
+                        drawCalendarGrid(sessions);
+
+                        // 2. CRITICAL FIX: The detail list must always show the full week's sessions.
+                        // The adapter handles the grouping/headers.
+                        ScheduleAdapter adapter = new ScheduleAdapter(requireContext(), sessions, facultyRepository, session -> navigateToRoster(session));
+                        detailList.setAdapter(adapter);
+                    }
+                }
+
+                @Override
+                public void onFailure(Exception e) {
+                    if (getContext() == null) return;
+                    Toast.makeText(requireContext(), "Failed to load schedule: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                }
+            });
+        }
     }
 
     // Helper function to create a TableHeader TextView (Moved outside drawCalendarGrid)
