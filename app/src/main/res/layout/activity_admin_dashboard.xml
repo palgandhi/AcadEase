@@ -5,6 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
     tools:context=".AdminDashboardActivity">
 
     <FrameLayout
@@ -19,6 +20,11 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:background="@color/white"
+        android:elevation="8dp"
+        app:itemIconTint="@color/primary_dark_grey"
+        app:itemTextColor="@color/primary_dark_grey"
+        app:itemActiveIndicatorStyle="@null"
+        app:labelVisibilityMode="labeled"
         app:menu="@menu/admin_bottom_nav_menu" />
 
 </RelativeLayout>

@@ -21,12 +21,6 @@ public class UserRepository {
         usersRef = db.collection("users");
     }
 
-    /**
-     * Attempts to log in the user via email/password and retrieves their profile document.
-     * * @param email User's email address.
-     * @param password User's password.
-     * @param callback Interface for success/failure handling.
-     */
     public void loginUser(String email, String password, LoginCallback callback) {
         auth.signInWithEmailAndPassword(email, password)
                 .addOnSuccessListener(authResult -> {
@@ -82,5 +76,26 @@ public class UserRepository {
 
     public FirebaseUser getCurrentFirebaseUser() {
         return auth.getCurrentUser();
+    }
+
+    /**
+     * Updates the user's profile image URL in Firestore.
+     */
+    public void updateProfileImageUrl(String uid, String imageUrl, UpdateCallback callback) {
+        usersRef.document(uid)
+                .update("profileImageUrl", imageUrl)
+                .addOnSuccessListener(aVoid -> {
+                    Log.i(TAG, "Profile image URL updated successfully");
+                    if (callback != null) callback.onSuccess();
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Failed to update profile image URL: " + e.getMessage());
+                    if (callback != null) callback.onFailure(e);
+                });
+    }
+
+    public interface UpdateCallback {
+        void onSuccess();
+        void onFailure(Exception e);
     }
 }

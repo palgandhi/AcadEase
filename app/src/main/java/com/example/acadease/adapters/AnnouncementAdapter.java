@@ -27,16 +27,18 @@ public class AnnouncementAdapter extends RecyclerView.Adapter<AnnouncementAdapte
     private final Context context;
     private final OnAnnouncementActionListener listener;
     private final AnnouncementRepository announcementRepository;
+    private final boolean canDelete;
 
     public interface OnAnnouncementActionListener {
         void onDeleteClicked(String announcementId, int position);
     }
 
-    public AnnouncementAdapter(Context context, List<Announcement> announcementList, OnAnnouncementActionListener listener, AnnouncementRepository announcementRepository) {
+    public AnnouncementAdapter(Context context, List<Announcement> announcementList, OnAnnouncementActionListener listener, AnnouncementRepository announcementRepository, boolean canDelete) {
         this.context = context;
         this.announcementList = announcementList;
         this.listener = listener;
         this.announcementRepository = announcementRepository;
+        this.canDelete = canDelete;
     }
 
     @NonNull
@@ -44,7 +46,7 @@ public class AnnouncementAdapter extends RecyclerView.Adapter<AnnouncementAdapte
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.item_announcement_card, parent, false);
-        return new ViewHolder(view, listener, announcementList, announcementRepository);
+        return new ViewHolder(view, listener, announcementList, announcementRepository, canDelete);
     }
 
     @Override
@@ -77,14 +79,7 @@ public class AnnouncementAdapter extends RecyclerView.Adapter<AnnouncementAdapte
             holder.category.setText("GENERAL");
         }
 
-        // 4. Target Roles Null Check (Using target TextView, which is mapped to Category's container)
-        List<String> roles = announcement.getTargetRole();
-        if (roles != null && !roles.isEmpty()) {
-            String targetRoles = "Target: " + String.join(", ", roles);
-            holder.target.setText(targetRoles);
-        } else {
-            holder.target.setText("Target: All Authenticated Users");
-        }
+        // 4. Target roles display removed per request; keep category chip only
 
         // 5. Timestamp
         holder.timestamp.setText(formatTimestamp(announcement.getCreatedAt()));
@@ -111,14 +106,14 @@ public class AnnouncementAdapter extends RecyclerView.Adapter<AnnouncementAdapte
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         // TextViews
-        public TextView title, category, target, timestamp, poster;
+        public TextView title, category, timestamp, poster;
         // Icons
         public ImageView iconLike, iconShare;
 
         // Local state tracker for the like button (false = outlined, true = filled/red)
         private boolean isLiked = false;
 
-        public ViewHolder(@NonNull View view, OnAnnouncementActionListener listener, List<Announcement> announcementList, AnnouncementRepository announcementRepository) {
+        public ViewHolder(@NonNull View view, OnAnnouncementActionListener listener, List<Announcement> announcementList, AnnouncementRepository announcementRepository, boolean canDelete) {
             super(view);
 
             // --- MAPPING VIEWS ---
@@ -127,8 +122,7 @@ public class AnnouncementAdapter extends RecyclerView.Adapter<AnnouncementAdapte
             poster = view.findViewById(R.id.card_announcement_poster);
             timestamp = view.findViewById(R.id.card_announcement_timestamp);
 
-            // Target is mapped to the Category TextView for simplicity in the current XML structure
-            target = view.findViewById(R.id.card_announcement_category);
+            // No separate target display anymore
 
             iconLike = view.findViewById(R.id.icon_like);
             iconShare = view.findViewById(R.id.icon_share);
@@ -163,23 +157,27 @@ public class AnnouncementAdapter extends RecyclerView.Adapter<AnnouncementAdapte
                 view.getContext().startActivity(Intent.createChooser(shareIntent, "Share Announcement"));
             });
 
-            // 3. DELETION LOGIC (Long Press)
-            view.setOnLongClickListener(v -> {
-                int position = getAdapterPosition();
-                if (position != RecyclerView.NO_POSITION && listener != null) {
-                    new AlertDialog.Builder(view.getContext())
-                            .setTitle("Confirm Deletion")
-                            .setMessage("Are you sure you want to delete this announcement: '" + announcementList.get(position).getTitle() + "'? \n\nTHIS ACTION IS IRREVERSIBLE.")
-                            .setPositiveButton("DELETE", (dialog, which) -> {
-                                String docId = announcementList.get(position).getId();
-                                listener.onDeleteClicked(docId, position);
-                            })
-                            .setNegativeButton("CANCEL", null)
-                            .show();
-                    return true;
-                }
-                return false;
-            });
+            // 3. DELETION LOGIC (Long Press) - enabled only when canDelete is true (Admin only)
+            if (canDelete) {
+                view.setOnLongClickListener(v -> {
+                    int position = getAdapterPosition();
+                    if (position != RecyclerView.NO_POSITION && listener != null) {
+                        new AlertDialog.Builder(view.getContext())
+                                .setTitle("Confirm Deletion")
+                                .setMessage("Are you sure you want to delete this announcement: '" + announcementList.get(position).getTitle() + "'? \n\nTHIS ACTION IS IRREVERSIBLE.")
+                                .setPositiveButton("DELETE", (dialog, which) -> {
+                                    String docId = announcementList.get(position).getId();
+                                    listener.onDeleteClicked(docId, position);
+                                })
+                                .setNegativeButton("CANCEL", null)
+                                .show();
+                        return true;
+                    }
+                    return false;
+                });
+            } else {
+                view.setOnLongClickListener(null);
+            }
         }
     }
 }

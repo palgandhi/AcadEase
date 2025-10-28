@@ -25,51 +25,27 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main); // Assuming your layout file is activity_main.xml
-
-        // 1. Initialize the Repository
+        // 1) Initialize repository first
         userRepository = new UserRepository();
 
-        // 2. Map UI elements (IDs will vary based on your XML, use correct IDs)
-        emailEditText = findViewById(R.id.email_edit_text);
-        passwordEditText = findViewById(R.id.password_edit_text);
-        loginButton = findViewById(R.id.login_button);
-
-        // 3. Set the Login button listener
-        loginButton.setOnClickListener(v -> handleLogin());
-
-        // Optional: Check if a user is already authenticated
-//        checkCurrentAuthStatus();
-    }
-
-    private void checkCurrentAuthStatus() {
+        // 2) If a user is already logged in, navigate immediately WITHOUT inflating login UI
         if (userRepository.getCurrentFirebaseUser() != null) {
-            // User is already logged in, skip login screen
             String uid = userRepository.getCurrentFirebaseUser().getUid();
             Log.i(TAG, "User already logged in. UID: " + uid);
-
-            // Immediately fetch profile data and proceed to next screen
             userRepository.fetchUserProfile(uid, new UserRepository.LoginCallback() {
                 @Override
                 public void onSuccess(User user) {
-                    Toast.makeText(MainActivity.this, "Welcome back, " + user.getName() + "!", Toast.LENGTH_SHORT).show();
                     Log.d(TAG, "Auto-login complete. Role: " + user.getRole());
-
-                    // Role-based navigation (same as handleLogin)
                     Intent intent;
                     String role = user.getRole() != null ? user.getRole().toLowerCase() : "";
-
-                    if ("student".equals(role)) {
-                        intent = new Intent(MainActivity.this, StudentDashboardActivity.class);
-                    } else if ("faculty".equals(role)) {
-                        intent = new Intent(MainActivity.this, FacultyDashboardActivity.class);
-                    } else if ("admin".equals(role)) {
-                        intent = new Intent(MainActivity.this, AdminDashboardActivity.class);
-                    } else {
-                        Toast.makeText(MainActivity.this, "Error: Unknown role assigned.", Toast.LENGTH_LONG).show();
+                    if ("student".equals(role)) intent = new Intent(MainActivity.this, StudentDashboardActivity.class);
+                    else if ("faculty".equals(role)) intent = new Intent(MainActivity.this, FacultyDashboardActivity.class);
+                    else if ("admin".equals(role)) intent = new Intent(MainActivity.this, AdminDashboardActivity.class);
+                    else {
+                        // Fallback to login if role unknown
+                        proceedToLoginUI();
                         return;
                     }
-
                     intent.putExtra("USER_UID", user.getUid());
                     intent.putExtra("USER_ROLE", user.getRole());
                     startActivity(intent);
@@ -78,11 +54,27 @@ public class MainActivity extends AppCompatActivity {
 
                 @Override
                 public void onFailure(Exception e) {
-                    Log.e(TAG, "Auto-login failed to retrieve profile: " + e.getMessage());
-                    // User stays on login screen
+                    Log.e(TAG, "Auto-login profile fetch failed: " + e.getMessage());
+                    // Proceed to login UI on failure
+                    proceedToLoginUI();
                 }
             });
+            return; // Important: don't inflate login UI while auto-login is in progress
         }
+
+        // 3) No user signed in -> show login UI
+        proceedToLoginUI();
+
+    }
+
+    private void proceedToLoginUI() {
+        setContentView(R.layout.activity_main);
+        // Map UI elements
+        emailEditText = findViewById(R.id.email_edit_text);
+        passwordEditText = findViewById(R.id.password_edit_text);
+        loginButton = findViewById(R.id.login_button);
+        // Bind listeners
+        loginButton.setOnClickListener(v -> handleLogin());
     }
 
     private void handleLogin() {

@@ -21,6 +21,7 @@ import com.example.acadease.model.Announcement;
 import com.google.android.material.button.MaterialButton;
 import android.content.Intent;
 import com.example.acadease.ProfileActivity;
+import com.example.acadease.CreateAnnouncementActivity;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -61,8 +62,12 @@ public class FacultyAnnouncementFragment extends Fragment implements Announcemen
 
         // 1. Map Core UI components
         recyclerView = view.findViewById(R.id.announcements_recycler_view);
-        // We must hide the FAB since Faculty should not be able to create announcements here
-        view.findViewById(R.id.fab_create_announcement).setVisibility(View.GONE);
+        // Show and wire the FAB to create announcements for faculty
+        View fab = view.findViewById(R.id.fab_create_announcement);
+        if (fab != null) {
+            fab.setVisibility(View.VISIBLE);
+            fab.setOnClickListener(v -> startActivity(new Intent(requireContext(), CreateAnnouncementActivity.class)));
+        }
         greetingTextView = view.findViewById(R.id.greeting_text);
 
         // 2. Map Filter Buttons
@@ -173,10 +178,10 @@ public class FacultyAnnouncementFragment extends Fragment implements Announcemen
                 if (announcements.isEmpty()) {
                     Toast.makeText(getContext(), "No announcements found for " + currentFilterCategory + ".", Toast.LENGTH_SHORT).show();
                     // Initialize with an empty list if no results
-                    adapter = new AnnouncementAdapter(getContext(), new ArrayList<>(), FacultyAnnouncementFragment.this, announcementRepository);
+                    adapter = new AnnouncementAdapter(getContext(), new ArrayList<>(), FacultyAnnouncementFragment.this, announcementRepository, false);
                 } else {
                     // Pass the repository instance for asynchronous poster lookups
-                    adapter = new AnnouncementAdapter(getContext(), announcements, FacultyAnnouncementFragment.this, announcementRepository);
+                    adapter = new AnnouncementAdapter(getContext(), announcements, FacultyAnnouncementFragment.this, announcementRepository, false);
                 }
                 recyclerView.setAdapter(adapter);
             }

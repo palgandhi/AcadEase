@@ -38,6 +38,9 @@ public class StudentDashboardActivity extends AppCompatActivity {
                 android.view.View profileIcon = v.findViewById(R.id.profile_icon);
                 if (profileIcon != null) {
                     Log.d("StudentDashboard", "Profile icon found in fragment: " + f.getClass().getSimpleName());
+                    if (profileIcon instanceof android.widget.ImageView) {
+                        UserDashboardImageHelper.ensureProfileIcon((android.widget.ImageView) profileIcon);
+                    }
                     profileIcon.setOnClickListener(view -> {
                         Log.d("StudentDashboard", "Profile icon clicked! Opening ProfileActivity");
                         startActivity(new Intent(StudentDashboardActivity.this, ProfileActivity.class));

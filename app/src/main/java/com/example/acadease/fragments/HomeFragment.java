@@ -40,14 +40,20 @@ public class HomeFragment extends Fragment implements AnnouncementAdapter.OnAnno
     // Repositories
     private AnnouncementRepository announcementRepository;
     private AdminRepository adminRepository;
+    private com.example.acadease.data.UserRepository userRepository;
 
     private AnnouncementAdapter adapter;
+    private boolean canDelete = false; // default for students/faculty
 
     public HomeFragment() { /* Required empty public constructor */ }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        // Read flag from arguments (admins can enable delete)
+        if (getArguments() != null) {
+            canDelete = getArguments().getBoolean("CAN_DELETE", false);
+        }
         return inflater.inflate(R.layout.fragment_home, container, false);
     }
 
@@ -58,6 +64,7 @@ public class HomeFragment extends Fragment implements AnnouncementAdapter.OnAnno
         // Initialize Repositories
         announcementRepository = new AnnouncementRepository();
         adminRepository = new AdminRepository();
+        userRepository = new com.example.acadease.data.UserRepository();
 
         // 1. Map Core UI components
         recyclerView = view.findViewById(R.id.announcements_recycler_view);
@@ -110,20 +117,32 @@ public class HomeFragment extends Fragment implements AnnouncementAdapter.OnAnno
     }
 
     private void setupGreeting() {
-        String userName = "Pal";
         Calendar cal = Calendar.getInstance();
         int hour = cal.get(Calendar.HOUR_OF_DAY);
-
         String greeting;
-        if (hour >= 5 && hour < 12) {
-            greeting = "Good Morning";
-        } else if (hour >= 12 && hour < 17) {
-            greeting = "Good Afternoon";
-        } else {
-            greeting = "Good Evening";
-        }
+        if (hour >= 5 && hour < 12) greeting = "Good Morning";
+        else if (hour >= 12 && hour < 17) greeting = "Good Afternoon";
+        else greeting = "Good Evening";
 
-        greetingTextView.setText(String.format("%s, %s", greeting, userName));
+        if (userRepository.getCurrentFirebaseUser() == null) {
+            greetingTextView.setText(String.format("%s", greeting));
+            return;
+        }
+        String uid = userRepository.getCurrentFirebaseUser().getUid();
+        userRepository.fetchUserProfile(uid, new com.example.acadease.data.UserRepository.LoginCallback() {
+            @Override
+            public void onSuccess(com.example.acadease.model.User user) {
+                String name = user.getName() != null && !user.getName().isEmpty() ? user.getName() : user.getEmail();
+                if (getContext() == null) return;
+                greetingTextView.setText(String.format("%s, %s", greeting, name != null ? name : "User"));
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                if (getContext() == null) return;
+                greetingTextView.setText(greeting);
+            }
+        });
     }
 
     /**
@@ -200,7 +219,7 @@ public class HomeFragment extends Fragment implements AnnouncementAdapter.OnAnno
                     Toast.makeText(getContext(), "No announcements found for " + currentFilterCategory + ".", Toast.LENGTH_SHORT).show();
                 }
 
-                adapter = new AnnouncementAdapter(getContext(), announcements, HomeFragment.this, announcementRepository);
+                adapter = new AnnouncementAdapter(getContext(), announcements, HomeFragment.this, announcementRepository, canDelete);
                 recyclerView.setAdapter(adapter);
             }
 

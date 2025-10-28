@@ -39,6 +39,9 @@ public class AdminDashboardActivity extends AppCompatActivity {
                 android.view.View profileIcon = v.findViewById(R.id.profile_icon);
                 if (profileIcon != null) {
                     Log.d("AdminDashboard", "Profile icon found in fragment: " + f.getClass().getSimpleName());
+                    if (profileIcon instanceof android.widget.ImageView) {
+                        UserDashboardImageHelper.ensureProfileIcon((android.widget.ImageView) profileIcon);
+                    }
                     profileIcon.setOnClickListener(view -> {
                         Log.d("AdminDashboard", "Profile icon clicked! Opening ProfileActivity");
                         startActivity(new Intent(AdminDashboardActivity.this, ProfileActivity.class));
@@ -51,7 +54,11 @@ public class AdminDashboardActivity extends AppCompatActivity {
 
         // Load the initial fragment (HomeFragment/Announcements) when the Activity starts
         if (savedInstanceState == null) {
-            loadFragment(new HomeFragment());
+            HomeFragment adminHome = new HomeFragment();
+            android.os.Bundle args = new android.os.Bundle();
+            args.putBoolean("CAN_DELETE", true);
+            adminHome.setArguments(args);
+            loadFragment(adminHome);
         }
     }
 
@@ -64,7 +71,11 @@ public class AdminDashboardActivity extends AppCompatActivity {
 
         // Use the IDs defined in res/menu/admin_bottom_nav_menu.xml
         if (itemId == R.id.nav_home) {
-            selectedFragment = new HomeFragment();
+            HomeFragment adminHome = new HomeFragment();
+            android.os.Bundle args = new android.os.Bundle();
+            args.putBoolean("CAN_DELETE", true);
+            adminHome.setArguments(args);
+            selectedFragment = adminHome;
         } else if (itemId == R.id.nav_users) {
             selectedFragment = new UserManagementFragment();
         } else if (itemId == R.id.nav_schedule) {

@@ -9,6 +9,7 @@
     <color name="card_background_dark">#383838</color>
     <color name="text_light">#FFFFFF</color>
     <color name="text_dark">#212121</color>
+    <color name="text_grey">#757575</color>
 
     <color name="design_default_color_error">#B00020</color>
     <color name="design_default_color_secondary">#03DAC6</color>

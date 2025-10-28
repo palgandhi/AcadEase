@@ -7,6 +7,30 @@
         <item name="colorSurface">@color/background_light_grey</item>
 
         <item name="colorOnPrimary">@color/text_light</item>
+
+        <!-- Status bar appearance -->
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+        <!-- Light status bar icons/text on light backgrounds (API 23+) -->
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
+
+    <!-- Local circular shape overlays (declared here to ensure AAPT picks them up) -->
+    <style name="ShapeAppearanceOverlay">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
+    <style name="ShapeAppearanceOverlay.AcadEase">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
+    <style name="ShapeAppearanceOverlay.AcadEase.Corner">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
+    <style name="ShapeAppearanceOverlay.AcadEase.Corner.Full">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
     </style>
 
 </resources>
