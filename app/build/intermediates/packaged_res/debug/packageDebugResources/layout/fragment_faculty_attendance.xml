@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.androids.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?android:attr/colorBackground"
+    tools:context=".fragments.FacultyAttendanceFragment">
+
+    <LinearLayout
+        android:id="@+id/attendance_controls"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_alignParentTop="true">
+
+        <include
+            android:id="@+id/attendance_header_bar"
+            layout="@layout/legacy_app_header"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="8dp"
+            android:text="Attendance"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            android:textColor="@color/text_dark"/>
+
+        <LinearLayout
+            android:id="@+id/date_nav_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:padding="16dp">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_prev_day"  android:layout_width="40dp"
+                android:layout_height="wrap_content"
+                android:text="&lt;"
+                android:padding="0dp"
+                android:layout_marginEnd="8dp"/>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:hint="Select Date"
+                style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/attendance_date_picker_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:focusable="false"
+                    android:clickable="true"
+                    android:inputType="none"
+                    tools:text="Oct 24, 2025 (Friday)" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_next_day"
+                android:layout_width="40dp"
+                android:layout_height="wrap_content"
+                android:text="&gt;"
+                android:padding="0dp"
+                android:layout_marginStart="8dp"/>
+        </LinearLayout>
+    </LinearLayout>
+
+    <FrameLayout
+        android:id="@+id/content_area_frame"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/attendance_controls"
+        android:layout_above="@id/btn_submit_attendance_container">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/attendance_session_recycler_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingTop="8dp"
+            android:visibility="visible"
+            tools:listitem="@layout/item_schedule_detail" />
+
+        <ScrollView
+            android:id="@+id/roster_scroll_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="16dp"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:id="@+id/attendance_roster_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"/>
+        </ScrollView>
+    </FrameLayout>
+
+
+    <LinearLayout
+        android:id="@+id/btn_submit_attendance_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:padding="16dp"
+        android:background="?android:attr/colorBackground"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_submit_attendance"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Submit Attendance Records"
+            android:paddingVertical="12dp" />
+    </LinearLayout>
+
+</RelativeLayout>

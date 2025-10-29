@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="?android:attr/colorBackground"
+    android:padding="16dp"
+    tools:context=".fragments.SubmissionsFragment">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Grade Submissions"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:textColor="?attr/colorPrimary"
+        android:layout_marginBottom="8dp"/>
+
+    <TextView
+        android:id="@+id/submissions_header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Assignments for: [Course Title] | Max Points: 100"
+        android:textSize="16sp"
+        android:textColor="@color/text_dark"
+        android:layout_marginBottom="20dp"/>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/submissions_recycler_view"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginBottom="16dp"
+        tools:listitem="@layout/item_submission_row" /> <com.google.android.material.button.MaterialButton
+    android:id="@+id/btn_save_grades"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:text="Save All Grades"
+    android:paddingVertical="12dp" />
+
+</LinearLayout>

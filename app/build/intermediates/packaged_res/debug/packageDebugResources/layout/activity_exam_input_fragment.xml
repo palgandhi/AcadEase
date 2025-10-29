@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="?android:attr/colorBackground"
+    tools:context=".fragments.ExamInputFragment">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Manual Exam Score Entry"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:textColor="?attr/colorPrimary"
+        android:layout_marginBottom="8dp"/>
+
+    <TextView
+        android:id="@+id/exam_input_header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Exam: [Exam Title] | Course: [Course Code]"
+        android:textSize="16sp"
+        android:textColor="@color/text_dark"
+        android:layout_marginBottom="20dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Enter Marks (Student Roster):"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:textColor="@color/text_dark"
+        android:layout_marginBottom="8dp"/>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/exam_roster_recycler_view"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginBottom="24dp"
+        tools:listitem="@layout/item_results_input_row" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_save_exam_scores"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Save Exam Scores"
+        android:paddingVertical="12dp" />
+
+</LinearLayout>

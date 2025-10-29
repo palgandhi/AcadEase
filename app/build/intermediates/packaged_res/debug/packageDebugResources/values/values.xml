@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="user_roles">
+        <item>student</item>
+        <item>faculty</item>
+        <item>admin</item>
+    </string-array>
+    <color name="background_light_grey">#F5F5F5</color>
+    <color name="black">#FF000000</color>
+    <color name="card_background_dark">#383838</color>
+    <color name="design_default_color_error">#B00020</color>
+    <color name="design_default_color_secondary">#03DAC6</color>
+    <color name="primary_accent">#007AFF</color>
+    <color name="primary_dark_grey">#313131</color>
+    <color name="text_dark">#212121</color>
+    <color name="text_grey">#757575</color>
+    <color name="text_light">#FFFFFF</color>
+    <color name="white">#FFFFFFFF</color>
+    <dimen name="ae_card_elevation">2dp</dimen>
+    <dimen name="ae_card_padding">16dp</dimen>
+    <dimen name="ae_card_radius">12dp</dimen>
+    <dimen name="ae_space_lg">16dp</dimen>
+    <dimen name="ae_space_md">12dp</dimen>
+    <dimen name="ae_space_sm">8dp</dimen>
+    <dimen name="ae_space_xl">20dp</dimen>
+    <dimen name="ae_space_xs">4dp</dimen>
+    <dimen name="ae_text_body">14sp</dimen>
+    <dimen name="ae_text_subtitle">14sp</dimen>
+    <dimen name="ae_text_title">18sp</dimen>
+    <string name="app_name">AcadEase</string>
+    <string name="gcm_defaultSenderId" translatable="false">684135409905</string>
+    <string name="google_api_key" translatable="false">AIzaSyC6N4f1b_UC4m7EVdSLRLXFDYdFPU3taGg</string>
+    <string name="google_app_id" translatable="false">1:684135409905:android:e15d6aba69b4917b342150</string>
+    <string name="google_crash_reporting_api_key" translatable="false">AIzaSyC6N4f1b_UC4m7EVdSLRLXFDYdFPU3taGg</string>
+    <string name="google_storage_bucket" translatable="false">acadease-faeb0.firebasestorage.app</string>
+    <string name="project_id" translatable="false">acadease-faeb0</string>
+    <style name="ShapeAppearanceOverlay">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
+    <style name="ShapeAppearanceOverlay.AcadEase">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
+    <style name="ShapeAppearanceOverlay.AcadEase.Corner">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
+    <style name="ShapeAppearanceOverlay.AcadEase.Corner.Full">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
+    <style name="Theme.AcadEase" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/primary_dark_grey</item>
+        <item name="colorPrimaryVariant">@color/primary_dark_grey</item>
+
+        <item name="android:colorBackground">@color/background_light_grey</item>
+        <item name="colorSurface">@color/background_light_grey</item>
+
+        <item name="colorOnPrimary">@color/text_light</item>
+
+        
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+        
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
+</resources>

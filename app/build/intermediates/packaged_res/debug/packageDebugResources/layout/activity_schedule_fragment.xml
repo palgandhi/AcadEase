@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?android:attr/colorBackground"
+    tools:context=".fragments.ScheduleFragment">
+
+    <LinearLayout
+        android:id="@+id/static_header_content"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_alignParentTop="true">
+
+        <include
+            android:id="@+id/schedule_header_bar"
+            layout="@layout/legacy_app_header"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="8dp"
+            android:text="Schedule"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            android:textColor="@color/text_dark"/>
+
+        <LinearLayout
+            android:id="@+id/week_nav_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="16dp"
+            android:gravity="center_vertical">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_prev_week"
+                android:layout_width="40dp"
+                android:layout_height="wrap_content"
+                android:text="&lt;"
+                android:padding="0dp"
+                android:layout_marginEnd="8dp"/>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:hint="Select Week"
+                style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/schedule_date_picker_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:focusable="false"
+                    android:clickable="true"
+                    tools:text="Oct 24 - Oct 30, 2025" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_next_week"
+                android:layout_width="40dp"
+                android:layout_height="wrap_content"
+                android:text="&gt;"
+                android:padding="0dp"
+                android:layout_marginStart="8dp"/>
+        </LinearLayout>
+    </LinearLayout>
+
+    <HorizontalScrollView
+        android:id="@+id/calendar_grid_scroll_h"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/static_header_content"
+        android:scrollbars="none">
+
+        <ScrollView
+            android:id="@+id/calendar_grid_scroll_v"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:scrollbars="none"
+            android:paddingStart="4dp"
+            android:paddingEnd="4dp">
+
+            <TableLayout
+                android:id="@+id/schedule_calendar_grid"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:stretchColumns="*">
+            </TableLayout>
+        </ScrollView>
+    </HorizontalScrollView>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/schedule_detail_list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/calendar_grid_scroll_h"
+        android:padding="16dp"
+        tools:listitem="@layout/item_schedule_detail" />
+
+</RelativeLayout>

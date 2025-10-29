@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="?android:attr/colorBackground"
+    tools:context=".fragments.RosterInputFragment">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Record Attendance"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:textColor="?attr/colorPrimary"
+        android:layout_marginBottom="8dp"/>
+
+    <TextView
+        android:id="@+id/roster_session_details"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Loading Roster for..."
+        android:textSize="16sp"
+        android:textColor="@color/text_dark"
+        android:layout_marginBottom="20dp"/>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginBottom="16dp">
+
+        <LinearLayout
+            android:id="@+id/attendance_roster_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"/>
+
+    </ScrollView>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_submit_attendance"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Submit Attendance Records"
+        android:paddingVertical="12dp" />
+
+</LinearLayout>

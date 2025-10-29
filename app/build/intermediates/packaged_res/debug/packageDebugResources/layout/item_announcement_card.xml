@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="6dp"
+    android:layout_marginBottom="6dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="2dp"
+    app:strokeWidth="0dp"
+    app:cardBackgroundColor="@color/white">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="12dp"
+            android:gravity="center_vertical">
+
+            <ImageView
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:src="@drawable/person"
+                app:tint="?attr/colorPrimary"
+                android:layout_marginEnd="10dp"
+                android:padding="4dp"
+                android:background="@color/background_light_grey"
+                android:contentDescription="Poster Icon" />
+
+            <TextView
+                android:id="@+id/card_announcement_poster"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Cultural Committee"
+                android:textColor="@color/text_dark"
+                android:textSize="15sp"
+                android:fontFamily="sans-serif-medium"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/card_announcement_timestamp"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="end"
+                android:text="Today, 7:00 PM"
+                android:textColor="@color/text_grey"
+                android:textSize="12sp"
+                android:alpha="0.7"/>
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/card_announcement_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="4"
+            android:text="It's time to grab your dandiya sticks and get ready to dance the night away! We're beyond excited to officially announce NUV Khelaiya 2025, our very own Garba night organized."
+            android:textColor="@color/text_dark"
+            android:textSize="15sp"
+            android:lineSpacingExtra="2dp"
+            android:textStyle="normal"
+            android:layout_marginBottom="16dp"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="8dp">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:id="@+id/card_announcement_category"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="CULTURAL"
+                    android:textSize="11sp"
+                    android:textColor="?attr/colorPrimary"
+                    android:textStyle="bold"
+                    android:background="@color/background_light_grey"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="12dp"
+                    android:paddingTop="6dp"
+                    android:paddingBottom="6dp"
+                    android:layout_marginEnd="8dp" />
+
+                
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="end"
+            android:layout_marginTop="4dp">
+
+            <ImageView
+                android:id="@+id/icon_like"
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:src="@drawable/ic_favorite_border"
+                app:tint="@color/text_grey"
+                android:layout_marginEnd="20dp"
+                android:padding="2dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Like" />
+
+            <ImageView
+                android:id="@+id/icon_share"
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:src="@drawable/share"
+                app:tint="@color/text_grey"
+                android:padding="2dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Share" />
+        </LinearLayout>
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

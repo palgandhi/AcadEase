@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.appbar.MaterialToolbar
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/app_header_bar"
+    android:layout_width="match_parent"
+    android:layout_height="?attr/actionBarSize"
+    android:background="@color/background_light_grey"
+    app:contentInsetStartWithNavigation="0dp"
+    app:title="AcadEase"
+    app:titleCentered="true"
+    app:titleTextColor="?attr/colorPrimary"
+    app:layout_scrollFlags="scroll|enterAlways">
+
+    <ImageView
+        android:id="@+id/nav_drawer_icon"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:padding="8dp"
+        android:src="@drawable/menu"
+        app:tint="?attr/colorPrimary"
+        android:contentDescription="Menu"
+        android:background="?attr/selectableItemBackgroundBorderless" />
+
+    <View
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"/>
+
+    <ImageView
+        android:id="@+id/profile_icon"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:padding="8dp"
+        android:src="@drawable/person"
+        app:tint="?attr/colorPrimary"
+        android:contentDescription="Profile"
+        android:background="?attr/selectableItemBackgroundBorderless" />
+
+</com.google.android.material.appbar.MaterialToolbar>

@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?android:attr/colorBackground"
+    tools:context=".fragments.HomeFragment">
+
+    <include
+        android:id="@+id/app_header_bar"
+        layout="@layout/legacy_app_header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <LinearLayout
+        android:id="@+id/greeting_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/app_header_bar"
+        android:orientation="vertical"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        android:paddingTop="20dp"
+        android:paddingBottom="12dp">
+
+        <TextView
+            android:id="@+id/greeting_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Good Morning"
+            android:textColor="@color/text_dark"
+            android:textSize="32sp"
+            android:fontFamily="sans-serif-medium"
+            android:textStyle="bold"
+            android:letterSpacing="-0.01" />
+
+        <TextView
+            android:id="@+id/greeting_subtitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="Stay updated with latest announcements"
+            android:textColor="@color/text_grey"
+            android:textSize="14sp"
+            android:alpha="0.7" />
+
+    </LinearLayout>
+
+    <HorizontalScrollView
+        android:id="@+id/category_filters_scroll"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/greeting_container"
+        android:layout_marginTop="8dp"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:id="@+id/category_filters_container"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_filter_academic"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:layout_marginEnd="10dp"
+                android:backgroundTint="?attr/colorPrimary"
+                android:text="Academic"
+                android:textSize="13sp"
+                android:paddingStart="20dp"
+                android:paddingEnd="20dp"
+                app:cornerRadius="20dp"
+                android:textColor="@color/text_light"
+                android:elevation="2dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_filter_sports"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:layout_marginEnd="10dp"
+                android:backgroundTint="@color/white"
+                android:text="Sports"
+                android:textSize="13sp"
+                android:paddingStart="20dp"
+                android:paddingEnd="20dp"
+                app:cornerRadius="20dp"
+                app:strokeColor="?attr/colorPrimary"
+                app:strokeWidth="1dp"
+                android:textColor="@color/text_dark" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_filter_all"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:layout_marginEnd="10dp"
+                android:backgroundTint="@color/white"
+                android:text="All"
+                android:textSize="13sp"
+                android:paddingStart="20dp"
+                android:paddingEnd="20dp"
+                app:cornerRadius="20dp"
+                app:strokeColor="?attr/colorPrimary"
+                app:strokeWidth="1dp"
+                android:textColor="@color/text_dark" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_filter_events"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:layout_marginEnd="10dp"
+                android:backgroundTint="@color/white"
+                android:text="Events"
+                android:textSize="13sp"
+                android:paddingStart="20dp"
+                android:paddingEnd="20dp"
+                app:cornerRadius="20dp"
+                app:strokeColor="?attr/colorPrimary"
+                app:strokeWidth="1dp"
+                android:textColor="@color/text_dark" />
+        </LinearLayout>
+    </HorizontalScrollView>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/announcements_recycler_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/category_filters_scroll"
+        android:layout_marginTop="20dp"
+        android:clipToPadding="false"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        android:paddingBottom="90dp"
+        tools:listitem="@layout/item_announcement_card" />
+
+
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+        android:id="@+id/fab_create_announcement"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginEnd="10dp"
+        android:layout_marginBottom="10dp"
+        android:contentDescription="Create New Announcement"
+        android:text="New Post"
+        android:textColor="@color/white"
+        android:textStyle="bold"
+        android:textSize="14sp"
+        app:backgroundTint="?attr/colorPrimary"
+        app:icon="@drawable/add"
+        app:iconTint="@color/white"
+        app:elevation="6dp"
+        app:cornerRadius="16dp" />
+
+
+</RelativeLayout>

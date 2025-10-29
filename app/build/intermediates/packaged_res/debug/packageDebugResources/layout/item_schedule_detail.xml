@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingTop="12dp"
+    android:paddingBottom="12dp"
+    android:background="@color/background_light_grey">
+
+    <TextView
+        android:id="@+id/schedule_time_range"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="10:00 - 11:00am"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="@color/text_dark"
+        android:layout_marginBottom="4dp"/>
+
+    <TextView
+        android:id="@+id/schedule_course_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Computer Graphics And Information Laboratory"
+        android:textSize="16sp"
+        android:textColor="?attr/colorPrimary" />
+
+    <TextView
+        android:id="@+id/schedule_professor_venue"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Prof: Yogesh Chaudhary | Class: A 303"
+        android:textSize="14sp"
+        android:textColor="@color/text_dark" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#DDDDDD"
+        android:layout_marginTop="12dp"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/action_button"
+        android:layout_width="wrap_content"
+        android:layout_height="36dp"
+        android:layout_gravity="end"
+        android:text="LOG ATTENDANCE"
+        android:textSize="12sp"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:layout_marginTop="8dp"/>
+
+</LinearLayout>

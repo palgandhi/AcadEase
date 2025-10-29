@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingTop="8dp"
+    android:paddingBottom="8dp"
+    android:background="@drawable/roster_item_background">
+
+    <TextView
+        android:id="@+id/student_name_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="[Student Name Placeholder]"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:textColor="@color/text_dark"
+        android:layout_marginBottom="8dp"/>
+
+    <RadioGroup
+        android:id="@+id/attendance_radio_group"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <RadioButton
+            android:id="@+id/status_present"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Present"
+            android:tag="present"
+            android:layout_marginEnd="16dp"/>
+
+        <RadioButton
+            android:id="@+id/status_absent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Absent"
+            android:tag="absent"
+            android:layout_marginEnd="16dp"/>
+
+        <RadioButton
+            android:id="@+id/status_late"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Late"
+            android:tag="late"
+            android:layout_marginEnd="16dp"/>
+
+        <RadioButton
+            android:id="@+id/status_excused"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Excused"
+            android:tag="excused"/>
+
+    </RadioGroup>
+</LinearLayout>
